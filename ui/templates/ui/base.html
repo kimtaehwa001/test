@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>My Perfume</title>
+    <!-- 아이콘 사용을 위한 CDN (Google Icons) -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; }
+        body { display: flex; background-color: #fcfcfc; height: 100vh; }
+
+        /* 왼쪽 사이드바 스타일 */
+        .sidebar {
+            width: 80px;
+            background-color: #fff;
+            border-right: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 40px; /* 위쪽 여백 */
+            height: 100%;
+            position: fixed;
+            z-index: 100;
+        }
+
+        .sidebar .menu-item {
+            margin-bottom: 30px;
+            text-align: center;
+            color: #555;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .sidebar .menu-item:hover {
+            color: #333; /* 마우스 올리면 진해짐 */
+        }
+
+        /* 메인 컨텐츠 영역 */
+        .content {
+            margin-left: 80px; /* 사이드바 너비만큼 띄움 */
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        /* 공통 유틸리티 */
+        .img-placeholder {
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 사이드바 (수정됨) -->
+    <div class="sidebar">
+        <!-- 홈 버튼 하나만 배치 -->
+        <a href="{% url 'home' %}" class="menu-item" style="text-decoration: none; color: inherit;">
+            <span class="material-icons icon-box" style="font-size: 32px; margin-bottom: 5px;">home</span>
+            <span style="font-size: 12px; font-weight: bold;">Home</span>
+        </a>
+    </div>
+
+    <!-- 페이지별 내용이 들어갈 곳 -->
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+</body>
+</html>

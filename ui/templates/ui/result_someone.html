@@ -1,0 +1,165 @@
+{% extends 'ui/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- CSS 연결 (캐시 방지용 버전 태그 ?v=8) -->
+<link rel="stylesheet" type="text/css" href="{% static 'ui/style.css' %}?v=8">
+
+<div class="result-container">
+
+    <!-- 헤더 -->
+    <div style="text-align: center; margin-top: 40px; margin-bottom: 60px;">
+        <h1 class="page-title">My Perfume</h1>
+        <p class="page-subtitle">당신의 향을 찾으세요</p>
+        <h2 class="section-header">For Someone, 그 사람의 분위기를 향기로 담아 선물하면 어떨까?</h2>
+    </div>
+
+    <!-- [1] 분석 결과 -->
+    <div class="analysis-section">
+        <div class="analysis-img-box">
+            Analysis Image
+        </div>
+        <div class="analysis-text">
+            <h3>분석결과</h3>
+            <p>
+                - 대상은 (연령대) (성별)으로 (스타일) 스타일을 선호해요.<br>
+                - 톤다운된 코디에서 포인트 컬러 사용이 보이는 점으로 보아<br>
+                자연스럽고 과하지 않은 취향이 드러났어요.<br>
+                - 취향 분석 결과: (향기 계열) 계열을 선호할 가능성이 높아요.<br>
+                <br>
+                이에 따라 밝고 투명하며 거부감 없는 향을 중심으로 추천해드릴게요.
+            </p>
+        </div>
+    </div>
+
+    <!-- [2] TOP 3 리스트 -->
+    <div class="top3-container">
+        <div class="top3-header">TOP3 Quick Pick <span class="material-icons">arrow_forward</span></div>
+
+        <!-- 향수 1 -->
+        <div class="perfume-item">
+            <div class="perfume-info">
+                <div class="perfume-img">Img</div>
+                <div class="perfume-text">
+                    <h4>Perfume Name 1</h4>
+                    <span class="brand">Brand Name</span>
+                    <span class="tags">4.2 • Unisex • Summer</span>
+                </div>
+            </div>
+            <div class="scent-chart">
+                <div class="chart-row"><span class="chart-label">Fresh</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span></div></div>
+                <div class="chart-row"><span class="chart-label">Floral</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
+                <div class="chart-row"><span class="chart-label">Citrus</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span></div></div>
+                <div class="chart-row"><span class="chart-label">Woody</span><div class="dots"><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
+                <div class="chart-row"><span class="chart-label">Powdery</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
+            </div>
+        </div>
+
+        <!-- 향수 2 -->
+        <div class="perfume-item">
+            <div class="perfume-info">
+                <div class="perfume-img">Img</div>
+                <div class="perfume-text">
+                    <h4>Perfume Name 2</h4>
+                    <span class="brand">Brand Name</span>
+                    <span class="tags">4.15 • Unisex • Summer</span>
+                </div>
+            </div>
+            <div class="scent-chart">
+                <div class="chart-row"><span class="chart-label">Fresh</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span></div></div>
+                <div class="chart-row"><span class="chart-label">Floral</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
+                <div class="chart-row"><span class="chart-label">Citrus</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
+                <div class="chart-row"><span class="chart-label">Woody</span><div class="dots"><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
+                <div class="chart-row"><span class="chart-label">Powdery</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
+            </div>
+        </div>
+
+        <!-- 향수 3 -->
+        <div class="perfume-item">
+            <div class="perfume-info">
+                <div class="perfume-img">Img</div>
+                <div class="perfume-text">
+                    <h4>Perfume Name 3</h4>
+                    <span class="brand">Brand Name</span>
+                    <span class="tags">4.15 • Unisex • Spring</span>
+                </div>
+            </div>
+            <div class="scent-chart">
+                <div class="chart-row"><span class="chart-label">Fresh</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span></div></div>
+                <div class="chart-row"><span class="chart-label">Floral</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
+                <div class="chart-row"><span class="chart-label">Citrus</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span></div></div>
+                <div class="chart-row"><span class="chart-label">Woody</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
+                <div class="chart-row"><span class="chart-label">Powdery</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- [3] Gift Card Message (For Someone 전용 섹션) -->
+<!-- [3] Gift Card Message -->
+    <div class="gift-section">
+        <h2 class="gift-header">Gift Card Message</h2>
+
+        <div class="gift-layout">
+            <!-- 왼쪽: 옵션 -->
+            <div class="gift-options">
+                <h4>• 편지 문구 추천</h4>
+                <div class="btn-group">
+                    <!-- ▼ onclick 이벤트 추가됨 -->
+                    <button class="selection-btn active" onclick="toggleGiftMessage(this)">✓ 짧은 문구</button>
+                    <button class="selection-btn" onclick="toggleGiftMessage(this)">긴 문구</button>
+                </div>
+            </div>
+
+            <!-- 오른쪽: 카드 미리보기 -->
+            <div class="gift-preview-area">
+                <div class="card-box">
+                    "너의 분위기를 닮은 향, 선물할게."<br>
+                    "첫 만남이 더 기억나면 좋겠어서."<br>
+                    "말보다 향이 먼저 마음을 전해줄 수 있으니까."
+                </div>
+                <!-- 새로고침 아이콘 -->
+                <span class="material-icons refresh-icon">cached</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+    function toggleGiftMessage(element) {
+        // 1. 같은 그룹 내의 다른 버튼 초기화
+        const parent = element.parentElement;
+        const siblings = parent.getElementsByClassName('selection-btn');
+
+        for (let btn of siblings) {
+            btn.classList.remove('active');
+            btn.innerText = btn.innerText.replace('✓ ', ''); // 체크 제거
+        }
+
+        // 2. 클릭한 버튼 활성화
+        element.classList.add('active');
+        element.innerText = '✓ ' + element.innerText; // 체크 추가
+
+        // 3. 문구 내용 변경 (짧은 문구 vs 긴 문구)
+        const cardBox = document.getElementById('card-content');
+
+        if (element.innerText.includes('짧은')) {
+            // 짧은 문구 예시
+            cardBox.innerHTML = `
+                "너의 분위기를 닮은 향, 선물할게."<br>
+                "첫 만남이 더 기억나면 좋겠어서."<br>
+                "말보다 향이 먼저 마음을 전해줄 수 있으니까."
+            `;
+        } else {
+            // 긴 문구 예시
+            cardBox.innerHTML = `
+                "평소 너의 이미지와 잘 어울릴 것 같아서 골랐어.<br>
+                이 향기가 너의 하루를 더 특별하게 만들어주길 바라.<br>
+                오늘도 좋은 하루 보내!"<br><br>
+                "지나가다 우연히 맡은 향이 너랑 너무 찰떡이라<br>
+                그냥 지나칠 수가 없더라.<br>
+                부담 갖지 말고 편하게 써줘!"
+            `;
+        }
+    }
+</script>
+{% endblock %}

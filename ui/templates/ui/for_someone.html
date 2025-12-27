@@ -1,0 +1,399 @@
+{% extends 'ui/base.html' %}
+{% load static %}
+
+<!-- 아이콘 라이브러리 -->
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+{% block content %}
+<!-- CSS 연결 -->
+<link rel="stylesheet" type="text/css" href="{% static 'ui/style.css' %}?v=2.9">
+
+<h2 class="page-title">For Someone, 그 사람의 분위기를 향기로 담아 선물하면 어떨까?</h2>
+
+<div class="form-container" style="max-width: 1500px; margin: 0 auto;">
+
+    <!-- 2. 코디 (For Me와 완벽히 동일한 구조 + ID 적용) -->
+    <div class="section">
+        <div class="section-title content-align">1. 코디(필수)</div>
+
+        <!-- [BOX 1] 상의 + 하의 -->
+        <div id="group-2pc" class="clothing-box">
+            <div class="box-label">상의 & 하의 조합</div>
+
+            <!-- [A] 상의 -->
+            <div class="outfit-row">
+                <div class="slider-wrapper">
+                    <button class="nav-btn" onclick="moveSlider('outfit-top', -1)"><span class="material-icons">chevron_left</span></button>
+                    <div class="slider-window">
+                        <div class="slider-track" id="track-outfit-top" data-index="0">
+                            <div class="outfit-item" onclick="selectOutfit(this)" data-type="top" data-value="blouse"><div class="icon-box"><img src="{% static 'ui/images/blouse.png' %}" alt="블라우스"></div><span>블라우스</span></div>
+                            <div class="outfit-item" onclick="selectOutfit(this)" data-type="top" data-value="tshirt"><div class="icon-box"><img src="{% static 'ui/images/tshirt.png' %}" alt="티셔츠"></div><span>티셔츠</span></div>
+                            <div class="outfit-item" onclick="selectOutfit(this)" data-type="top" data-value="knit"><div class="icon-box"><img src="{% static 'ui/images/knit.png' %}" alt="니트웨어"></div><span>니트웨어</span></div>
+                            <div class="outfit-item" onclick="selectOutfit(this)" data-type="top" data-value="shirt"><div class="icon-box"><img src="{% static 'ui/images/shirt.png' %}" alt="셔츠"></div><span>셔츠</span></div>
+                            <div class="outfit-item" onclick="selectOutfit(this)" data-type="top" data-value="sleeveless"><div class="icon-box"><img src="{% static 'ui/images/sleeveless.png' %}" alt="탑"></div><span>탑</span></div>
+                            <div class="outfit-item" onclick="selectOutfit(this)" data-type="top" data-value="hoodie"><div class="icon-box"><img src="{% static 'ui/images/hoodie.png' %}" alt="후드티"></div><span>후드티</span></div>
+                            <div class="outfit-item" onclick="selectOutfit(this)" data-type="top" data-value="bratop"><div class="icon-box"><img src="{% static 'ui/images/bratop.png' %}" alt="브라탑"></div><span>브라탑</span></div>
+                        </div>
+                    </div>
+                    <button class="nav-btn" onclick="moveSlider('outfit-top', 1)"><span class="material-icons">chevron_right</span></button>
+                </div>
+                <!-- 상의 미리보기 (ID: preview-top) -->
+                <div class="preview-container" id="preview-top">
+                    <div class="preview-box">Img</div><div class="preview-box">Img</div><div class="preview-box">Img</div><div class="preview-box">Img</div>
+                    <span class="material-icons refresh-icon" data-target="top">cached</span>
+                </div>
+            </div>
+
+            <!-- 상의 색상 -->
+            <div class="slider-wrapper color-slider-wrapper" style="margin-bottom: 20px;">
+                <button class="nav-btn" onclick="moveSlider('color-top', -1)"><span class="material-icons">chevron_left</span></button>
+                <div class="slider-window">
+                    <div class="slider-track" id="track-color-top" data-index="0">
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="white"><div class="color-circle" style="background:#FFFFFF;"></div><span>화이트</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="black"><div class="color-circle" style="background:#000000;"></div><span>블랙</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="beige"><div class="color-circle" style="background:#E1C699;"></div><span>베이지</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="pink"><div class="color-circle" style="background:#FFC0CB;"></div><span>핑크</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="skyblue"><div class="color-circle" style="background:#87CEEB;"></div><span>스카이블루</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="grey"><div class="color-circle" style="background:#808080;"></div><span>그레이</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="brown"><div class="color-circle" style="background:#8B4513;"></div><span>브라운</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="navy"><div class="color-circle" style="background:#000080;"></div><span>네이비</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="red"><div class="color-circle" style="background:#FF0000;"></div><span>레드</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="yellow"><div class="color-circle" style="background:#FFFF00;"></div><span>옐로우</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="blue"><div class="color-circle" style="background:#0000FF;"></div><span>블루</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="lavender"><div class="color-circle" style="background:#E6E6FA;"></div><span>라벤더</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="wine"><div class="color-circle" style="background:#722F37;"></div><span>와인</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="silver"><div class="color-circle" style="background:#C0C0C0;"></div><span>실버</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="orange"><div class="color-circle" style="background:#FFA500;"></div><span>오렌지</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="khaki"><div class="color-circle" style="background:#BDB76B;"></div><span>카키</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="green"><div class="color-circle" style="background:#008000;"></div><span>그린</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="purple"><div class="color-circle" style="background:#800080;"></div><span>퍼플</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="mint"><div class="color-circle" style="background:#98FF98;"></div><span>민트</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="gold"><div class="color-circle" style="background:#FFD700;"></div><span>골드</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="top" data-value="neon"><div class="color-circle" style="background:#39FF14;"></div><span>네온</span></div>
+                    </div>
+                </div>
+                <button class="nav-btn" onclick="moveSlider('color-top', 1)"><span class="material-icons">chevron_right</span></button>
+            </div>
+
+            <!-- [B] 하의 -->
+            <div class="outfit-row">
+                <div class="slider-wrapper">
+                    <button class="nav-btn" onclick="moveSlider('outfit-bottom', -1)"><span class="material-icons">chevron_left</span></button>
+                    <div class="slider-window">
+                        <div class="slider-track" id="track-outfit-bottom" data-index="0">
+                            <div class="outfit-item" onclick="selectOutfit(this)" data-type="bottom" data-value="pants"><div class="icon-box"><img src="{% static 'ui/images/pants.png' %}" alt="팬츠"></div><span>팬츠</span></div>
+                            <div class="outfit-item" onclick="selectOutfit(this)" data-type="bottom" data-value="jeans"><div class="icon-box"><img src="{% static 'ui/images/jeans.png' %}" alt="청바지"></div><span>청바지</span></div>
+                            <div class="outfit-item" onclick="selectOutfit(this)" data-type="bottom" data-value="skirt"><div class="icon-box"><img src="{% static 'ui/images/skirt.png' %}" alt="스커트"></div><span>스커트</span></div>
+                            <div class="outfit-item" onclick="selectOutfit(this)" data-type="bottom" data-value="leggings"><div class="icon-box"><img src="{% static 'ui/images/leggings.png' %}" alt="레깅스"></div><span>레깅스</span></div>
+                            <div class="outfit-item" onclick="selectOutfit(this)" data-type="bottom" data-value="jogger"><div class="icon-box"><img src="{% static 'ui/images/jogger.png' %}" alt="트레이닝"></div><span>트레이닝</span></div>
+                        </div>
+                    </div>
+                    <button class="nav-btn" onclick="moveSlider('outfit-bottom', 1)"><span class="material-icons">chevron_right</span></button>
+                </div>
+
+                <!-- 하의 미리보기 (ID: preview-bottom) -->
+                <div class="preview-container" id="preview-bottom">
+                    <div class="preview-box">Img</div><div class="preview-box">Img</div><div class="preview-box">Img</div><div class="preview-box">Img</div>
+                    <span class="material-icons refresh-icon" data-target="bottom">cached</span>
+                </div>
+            </div>
+
+            <!-- 하의 색상 -->
+            <div class="slider-wrapper color-slider-wrapper">
+                <button class="nav-btn" onclick="moveSlider('color-bottom', -1)"><span class="material-icons">chevron_left</span></button>
+                <div class="slider-window">
+                    <div class="slider-track" id="track-color-bottom" data-index="0">
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="white"><div class="color-circle" style="background:#FFFFFF;"></div><span>화이트</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="black"><div class="color-circle" style="background:#000000;"></div><span>블랙</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="beige"><div class="color-circle" style="background:#E1C699;"></div><span>베이지</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="pink"><div class="color-circle" style="background:#FFC0CB;"></div><span>핑크</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="skyblue"><div class="color-circle" style="background:#87CEEB;"></div><span>스카이블루</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="grey"><div class="color-circle" style="background:#808080;"></div><span>그레이</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="brown"><div class="color-circle" style="background:#8B4513;"></div><span>브라운</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="navy"><div class="color-circle" style="background:#000080;"></div><span>네이비</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="red"><div class="color-circle" style="background:#FF0000;"></div><span>레드</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="yellow"><div class="color-circle" style="background:#FFFF00;"></div><span>옐로우</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="blue"><div class="color-circle" style="background:#0000FF;"></div><span>블루</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="lavender"><div class="color-circle" style="background:#E6E6FA;"></div><span>라벤더</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="wine"><div class="color-circle" style="background:#722F37;"></div><span>와인</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="silver"><div class="color-circle" style="background:#C0C0C0;"></div><span>실버</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="orange"><div class="color-circle" style="background:#FFA500;"></div><span>오렌지</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="khaki"><div class="color-circle" style="background:#BDB76B;"></div><span>카키</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="green"><div class="color-circle" style="background:#008000;"></div><span>그린</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="purple"><div class="color-circle" style="background:#800080;"></div><span>퍼플</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="mint"><div class="color-circle" style="background:#98FF98;"></div><span>민트</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="gold"><div class="color-circle" style="background:#FFD700;"></div><span>골드</span></div>
+                        <div class="color-item" onclick="selectColor(this)" data-type="bottom" data-value="neon"><div class="color-circle" style="background:#39FF14;"></div><span>네온</span></div>
+                    </div>
+                </div>
+                <button class="nav-btn" onclick="moveSlider('color-bottom', 1)"><span class="material-icons">chevron_right</span></button>
+            </div>
+        </div>
+
+        <!-- [BOX 2] 원피스 -->
+        <div id="group-1pc" class="clothing-box">
+            <div class="box-label">원피스</div>
+            <div class="split-layout">
+                <div class="left-column">
+                    <!-- 원피스 아이콘 -->
+                    <div class="slider-wrapper">
+                        <button class="nav-btn" onclick="moveSlider('outfit-onepiece', -1)"><span class="material-icons">chevron_left</span></button>
+                        <div class="slider-window">
+                            <div class="slider-track" id="track-outfit-onepiece" data-index="0">
+                                <div class="outfit-item" onclick="selectOutfit(this)" data-type="onepiece" data-value="dress"><div class="icon-box"><img src="{% static 'ui/images/dress.png' %}" alt="드레스"></div><span>드레스</span></div>
+                                <div class="outfit-item" onclick="selectOutfit(this)" data-type="onepiece" data-value="jumpsuit"><div class="icon-box"><img src="{% static 'ui/images/jumpsuit.png' %}" alt="점프수트"></div><span>점프수트</span></div>
+                            </div>
+                        </div>
+                        <button class="nav-btn" onclick="moveSlider('outfit-onepiece', 1)"><span class="material-icons">chevron_right</span></button>
+                    </div>
+                    <!-- 원피스 색상 -->
+                    <div class="slider-wrapper color-slider-wrapper">
+                        <button class="nav-btn" onclick="moveSlider('color-onepiece', -1)"><span class="material-icons">chevron_left</span></button>
+                        <div class="slider-window">
+                            <div class="slider-track" id="track-color-onepiece" data-index="0">
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="white"><div class="color-circle" style="background:#FFFFFF;"></div><span>화이트</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="black"><div class="color-circle" style="background:#000000;"></div><span>블랙</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="beige"><div class="color-circle" style="background:#E1C699;"></div><span>베이지</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="pink"><div class="color-circle" style="background:#FFC0CB;"></div><span>핑크</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="skyblue"><div class="color-circle" style="background:#87CEEB;"></div><span>스카이블루</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="grey"><div class="color-circle" style="background:#808080;"></div><span>그레이</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="brown"><div class="color-circle" style="background:#8B4513;"></div><span>브라운</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="navy"><div class="color-circle" style="background:#000080;"></div><span>네이비</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="red"><div class="color-circle" style="background:#FF0000;"></div><span>레드</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="yellow"><div class="color-circle" style="background:#FFFF00;"></div><span>옐로우</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="blue"><div class="color-circle" style="background:#0000FF;"></div><span>블루</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="lavender"><div class="color-circle" style="background:#E6E6FA;"></div><span>라벤더</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="wine"><div class="color-circle" style="background:#722F37;"></div><span>와인</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="silver"><div class="color-circle" style="background:#C0C0C0;"></div><span>실버</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="orange"><div class="color-circle" style="background:#FFA500;"></div><span>오렌지</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="khaki"><div class="color-circle" style="background:#BDB76B;"></div><span>카키</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="green"><div class="color-circle" style="background:#008000;"></div><span>그린</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="purple"><div class="color-circle" style="background:#800080;"></div><span>퍼플</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="mint"><div class="color-circle" style="background:#98FF98;"></div><span>민트</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="gold"><div class="color-circle" style="background:#FFD700;"></div><span>골드</span></div>
+                                <div class="color-item" onclick="selectColor(this)" data-type="onepiece" data-value="neon"><div class="color-circle" style="background:#39FF14;"></div><span>네온</span></div>
+                            </div>
+                        </div>
+                        <button class="nav-btn" onclick="moveSlider('color-onepiece', 1)"><span class="material-icons">chevron_right</span></button>
+                    </div>
+                </div>
+                <!-- 원피스 미리보기 (ID: preview-onepiece) -->
+                <div class="preview-container" id="preview-onepiece">
+                    <div class="preview-box">Img</div><div class="preview-box">Img</div><div class="preview-box">Img</div><div class="preview-box">Img</div>
+                    <span class="material-icons refresh-icon" data-target="onepiece">cached</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 계절 -->
+    <div class="section content-align">
+        <div class="section-title">2. 계절(필수)</div>
+        <div class="btn-group">
+            <button class="selection-btn" onclick="toggleSingle(this)">봄</button>
+            <button class="selection-btn" onclick="toggleSingle(this)">여름</button>
+            <button class="selection-btn" onclick="toggleSingle(this)">가을</button>
+            <button class="selection-btn" onclick="toggleSingle(this)">겨울</button>
+        </div>
+    </div>
+
+    <!-- 4. 비선호 취향 -->
+    <div class="section content-align">
+        <div class="section-title">3. 비선호 취향 (선택)</div>
+        <div class="btn-group">
+            <button class="selection-btn" onclick="toggleMulti(this)">시트러스</button>
+            <button class="selection-btn" onclick="toggleMulti(this)">우디</button>
+            <button class="selection-btn" onclick="toggleMulti(this)">플로럴</button>
+            <button class="selection-btn" onclick="toggleMulti(this)">머스크</button>
+        </div>
+    </div>
+
+    <!-- 5. 선물 대상 (추가됨) -->
+    <div class="section content-align">
+        <div class="section-title">4. 선물 대상(선택)</div>
+        <div class="btn-group">
+            <button class="selection-btn" onclick="toggleSingle(this)">연인</button>
+            <button class="selection-btn" onclick="toggleSingle(this)">친구</button>
+            <button class="selection-btn" onclick="toggleSingle(this)">가족</button>
+            <button class="selection-btn" onclick="toggleSingle(this)">직장동료</button>
+        </div>
+    </div>
+
+    <!-- 6. 상황 (추가됨) -->
+    <div class="section content-align">
+        <div class="section-title">5. 상황(선택)</div>
+        <div class="btn-group">
+            <button class="selection-btn" onclick="toggleSingle(this)">생일</button>
+            <button class="selection-btn" onclick="toggleSingle(this)">기념일</button>
+            <button class="selection-btn" onclick="toggleSingle(this)">첫 만남</button>
+            <button class="selection-btn" onclick="toggleSingle(this)">축하</button>
+        </div>
+    </div>
+
+<div class="submit-container">
+        <a href="{% url 'result_someone' %}">
+            <button class="submit-btn">완료</button>
+        </a>
+    </div>
+    </div>
+</div>
+
+<script>
+    // JS 로직은 For Me와 100% 동일 (ID와 data-value를 기반으로 작동)
+    const selections = {
+        top: { item: null, color: null },
+        bottom: { item: null, color: null },
+        onepiece: { item: null, color: null }
+    };
+
+    function moveSlider(trackId, direction) {
+        const track = document.getElementById('track-' + trackId);
+        const isColor = trackId.includes('color');
+        const step = isColor ? 65 : 100;
+        const visibleCount = isColor ? 5 : 3;
+        const items = track.children;
+        const totalItems = items.length;
+        let currentIndex = parseInt(track.getAttribute('data-index'));
+        let newIndex = currentIndex + direction;
+        const maxIndex = totalItems - visibleCount;
+        if (newIndex < 0) newIndex = 0;
+        if (newIndex > maxIndex) newIndex = maxIndex;
+        track.style.transform = `translateX(-${newIndex * step}px)`;
+        track.setAttribute('data-index', newIndex);
+    }
+
+    function updateGroupState() {
+        const group2pc = document.getElementById('group-2pc');
+        const group1pc = document.getElementById('group-1pc');
+        const isSelected2pc = group2pc.querySelector('.selected') !== null;
+        const isSelected1pc = group1pc.querySelector('.selected') !== null;
+        if (!isSelected2pc && !isSelected1pc) {
+            group2pc.classList.remove('disabled');
+            group1pc.classList.remove('disabled');
+            return;
+        }
+        if (isSelected2pc) {
+            group1pc.classList.add('disabled');
+            group2pc.classList.remove('disabled');
+        } else if (isSelected1pc) {
+            group2pc.classList.add('disabled');
+            group1pc.classList.remove('disabled');
+        }
+    }
+
+    function fetchImages(category) {
+        const item = selections[category].item;
+        const color = selections[category].color;
+        if (item && color) {
+            let containerId;
+            if (category === 'top') containerId = 'preview-top';
+            else if (category === 'bottom') containerId = 'preview-bottom';
+            else if (category === 'onepiece') containerId = 'preview-onepiece';
+
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            fetch(`/api/filter-images/?category=${category}&item=${item}&color=${color}`)
+                .then(response => response.json())
+                .then(data => {
+                    const boxes = container.getElementsByClassName('preview-box');
+                    Array.from(boxes).forEach((box, index) => {
+                        box.classList.remove('selected');
+                        box.innerHTML = '';
+                        box.onclick = null;
+                        if (data.images[index]) {
+                            const img = document.createElement('img');
+                            img.src = data.images[index];
+                            img.style.width = '100%'; img.style.height = '100%'; img.style.objectFit = 'cover'; img.style.borderRadius = '35px';
+                            box.appendChild(img);
+                            box.onclick = function() { selectPreviewImage(this); };
+                        } else {
+                            box.innerText = 'No Img';
+                        }
+                    });
+                })
+                .catch(err => console.error('Error:', err));
+        }
+    }
+
+    function selectPreviewImage(element) {
+        const container = element.parentElement;
+        const siblings = container.getElementsByClassName('preview-box');
+        for (let box of siblings) {
+            box.classList.remove('selected');
+        }
+        element.classList.add('selected');
+    }
+
+    function selectOutfit(element) {
+        const parent = element.parentElement;
+        const siblings = parent.getElementsByClassName('outfit-item');
+        if (element.classList.contains('selected')) {
+            element.classList.remove('selected');
+        } else {
+            for (let item of siblings) { item.classList.remove('selected'); }
+            element.classList.add('selected');
+        }
+        updateGroupState();
+        const type = element.getAttribute('data-type');
+        const value = element.getAttribute('data-value');
+        if (element.classList.contains('selected')) {
+            selections[type].item = value;
+        } else {
+            selections[type].item = null;
+        }
+        fetchImages(type);
+    }
+
+    function selectColor(element) {
+        const parent = element.parentElement;
+        const siblings = parent.getElementsByClassName('color-item');
+        if (element.classList.contains('selected')) {
+            element.classList.remove('selected');
+        } else {
+            for (let item of siblings) { item.classList.remove('selected'); }
+            element.classList.add('selected');
+        }
+        updateGroupState();
+        const type = element.getAttribute('data-type');
+        const value = element.getAttribute('data-value');
+        if (element.classList.contains('selected')) {
+            selections[type].color = value;
+        } else {
+            selections[type].color = null;
+        }
+        fetchImages(type);
+    }
+
+    document.querySelectorAll('.refresh-icon').forEach(icon => {
+        icon.addEventListener('click', function() {
+            const target = this.getAttribute('data-target');
+            if (target) fetchImages(target);
+            this.style.transform = 'rotate(180deg)';
+            setTimeout(() => { this.style.transform = 'rotate(0deg)'; }, 400);
+        });
+    });
+
+    function toggleSingle(element) {
+        const parent = element.parentElement;
+        const siblings = parent.getElementsByClassName('selection-btn');
+        for (let btn of siblings) {
+            btn.classList.remove('active');
+            btn.innerText = btn.innerText.replace('✓ ', '');
+        }
+        element.classList.add('active');
+        element.innerText = '✓ ' + element.innerText;
+    }
+
+    function toggleMulti(element) {
+        if (element.classList.contains('active')) {
+            element.classList.remove('active');
+            element.innerText = element.innerText.replace('✓ ', '');
+        } else {
+            element.classList.add('active');
+            element.innerText = '✓ ' + element.innerText;
+        }
+    }
+</script>
+
+{% endblock %}

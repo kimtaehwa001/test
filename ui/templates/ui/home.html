@@ -1,0 +1,103 @@
+{% extends 'ui/base.html' %}
+
+{% block content %}
+<style>
+    .header { text-align: center; margin-bottom: 40px; }
+    .header h1 { font-size: 32px; font-weight: bold; margin-bottom: 10px; }
+    .header p { color: #666; }
+
+    .card-container {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .card {
+        width: 45%;
+        height: 400px;
+        background-color: #4a3b32;
+        border-radius: 20px;
+        position: relative;
+        padding: 40px;
+        color: white;
+        text-decoration: none;
+        transition: transform 0.2s;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card:hover { transform: translateY(-5px); }
+    .card h2 { font-size: 36px; margin-bottom: 20px; font-weight: 300; }
+    .card p { font-size: 24px; line-height: 1.4; font-weight: bold; }
+
+    .english-sub {
+        position: absolute;
+        bottom: 30px;
+        left: 40px;
+        font-size: 14px;
+        color: rgba(255,255,255,0.6);
+        line-height: 1.2;
+    }
+
+    .arrow-icon {
+        position: absolute;
+        bottom: 30px;
+        right: 30px;
+        font-size: 30px;
+    }
+</style>
+
+<div class="header">
+    <h1>My Perfume</h1>
+    <p>당신의 향을 찾으세요</p>
+</div>
+
+<div class="card-container">
+    <!-- For Me 카드 -->
+    <a href="{% url 'for_me' %}" class="card">
+        <h2>For Me</h2>
+        <p>지금의 나에게<br>어울리는 향은?</p>
+        <div class="english-sub">
+            A SCENT<br>THAT<br>SUITS ME
+        </div>
+        <span class="material-icons arrow-icon">north_east</span>
+    </a>
+
+    <!-- For Someone 카드 -->
+    <a href="{% url 'for_someone' %}" class="card">
+        <h2>For Someone</h2>
+        <p>그 사람의 분위기를<br>향기로 담아,<br>선물하면 어떨까?</p>
+        <!-- <div class="english-sub">FOR<br>SOMEONE<br>SPECIAL</div> -->
+        <span class="material-icons arrow-icon">north_east</span>
+    </a>
+</div>
+
+<!-- ========================================== -->
+<!-- [API 테스트] 개발자 도구(F12) 콘솔 확인용 -->
+<!-- ========================================== -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("🚀 홈페이지 로딩 완료! API 연결 테스트를 시작합니다...");
+
+        // 향수 목록 API 호출해보기
+        fetch('/api/perfumes/')
+            .then(response => {
+                if (!response.ok) throw new Error('네트워크 응답이 올바르지 않습니다.');
+                return response.json();
+            })
+            .then(data => {
+                console.log("✅ API 연결 성공!");
+                console.log("📦 가져온 향수 데이터:", data);
+
+                // 데이터가 비어있다면 안내 메시지
+                if (data.results && data.results.length === 0) {
+                    console.warn("⚠️ 데이터가 비어있습니다. http://127.0.0.1:8000/admin/ 에서 향수를 추가해주세요.");
+                }
+            })
+            .catch(error => {
+                console.error("❌ API 연결 실패:", error);
+            });
+    });
+</script>
+
+{% endblock %}

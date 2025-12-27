@@ -1,0 +1,158 @@
+{% extends 'ui/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- 보안을 위한 CSRF 토큰 및 필수 외부 리소스 -->
+<input type="hidden" id="csrf_token" value="{{ csrf_token }}">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{% static 'ui/style.css' %}?v=3.0">
+
+<div class="result-container">
+    <!-- 1. 헤더 섹션 -->
+    <div class="result-header" style="text-align: center; margin-top: 40px; margin-bottom: 60px;">
+        <h1 class="page-title" style="text-align: center; padding: 0;">My Perfume</h1>
+        <p class="page-subtitle" style="text-align: center; color: #888; margin-bottom: 10px;">당신의 향을 찾으세요</p>
+        <h2 class="section-header">For Me, 지금의 나에게 어울리는 향은?</h2>
+    </div>
+
+    <!-- 2. 상단 분석 영역 (코디 이미지 + AI 추천 이유) -->
+    <div class="analysis-horizontal-box">
+        <!-- [좌측] 사용자가 선택한 코디 이미지 (패션 카드 레이아웃) -->
+        <div class="clothing-img-box" id="outfit-display-area">
+            <span class="material-icons" style="font-size: 60px; color: #ddd;">checkroom</span>
+            <p style="font-size: 14px; color: #999;">코디를 불러오는 중...</p>
+        </div>
+
+        <!-- [우측] AI 분석 결과 (LLM API 연동) -->
+        <div class="llm-explanation-box">
+            <h3>분석 결과 및 추천 이유</h3>
+            <p id="ai-summary-text" style="line-height: 1.6; color: #555;">
+                AI가 오늘의 코디와 계절을 분석하여 당신만을 위한 추천사를 작성하고 있습니다. 잠시만 기다려 주세요...
+            </p>
+        </div>
+    </div>
+
+    <!-- 3. 하단 향수 그리드 (TOP3) -->
+    <div class="perfume-grid-container">
+        <h3 class="grid-title">TOP3 Quick Pick <span class="material-icons" style="vertical-align: middle; font-size: 18px;">arrow_forward</span></h3>
+        <div class="perfume-cards-wrapper" id="perfume-results-container">
+            <!-- 자바스크립트가 카드들을 여기에 생성합니다 -->
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // 1. [코디 이미지] 로드 (기존 동일)
+    fetch('/api/user-outfit/')
+        .then(res => res.json())
+        .then(data => {
+            const outfitArea = document.getElementById('outfit-display-area');
+            if (!outfitArea) return;
+            outfitArea.innerHTML = '';
+            if (data.onepiece_img) {
+                outfitArea.innerHTML = `<img src="${data.onepiece_img}" class="outfit-card onepiece-card">`;
+            } else if (data.top_img && data.bottom_img) {
+                outfitArea.innerHTML = `
+                    <img src="${data.top_img}" class="outfit-card top-card">
+                    <img src="${data.bottom_img}" class="outfit-card bottom-card">
+                `;
+            } else {
+                outfitArea.innerHTML = `<span class="material-icons" style="font-size: 60px; color: #ddd;">checkroom</span>`;
+            }
+        });
+
+    // 2. [진짜 향수 정보 및 이미지] 로드
+    // 이제 여기서 fakeData를 쓰지 않고 API 데이터를 직접 뿌립니다.
+    fetch('/api/perfume-top3-images/')
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('perfume-results-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (data.length === 0) {
+                container.innerHTML = "<p style='text-align:center; width:100%; color:#999;'>추천된 향수가 없습니다.</p>";
+                return;
+            }
+
+            data.forEach((item, index) => {
+                const accordText = item.accords.join(' · ');
+                const formattedScore = parseFloat(item.myscore).toFixed(2);
+                const pId = item.perfume_id;
+
+                const cardHtml = `
+                    <div class="perfume-card">
+                        <div class="perfume-img-slot">
+                            <img src="${item.image_url}" style="width:100%; height:100%; object-fit:contain;" onerror="this.src='/static/ui/images/default_perfume.png'">
+                        </div>
+                        <div class="perfume-details">
+                            <h4 class="p-name">${item.perfume_name}</h4>
+                            <p class="p-brand">${item.brand}</p>
+                            <p class="p-info-tags">${item.gender}</p>
+                            <p class="p-accords-list">${accordText}</p>
+
+                            <div class="score-display-row">
+                                <span class="score-label">Matching Score</span>
+                                <span class="score-value">${formattedScore}</span>
+                                <span class="score-max">/ 300</span>
+                            </div>
+
+                            <!-- 개별 피드백 영역 -->
+                            <div class="feedback-container" id="feedback-area-${pId}">
+                                <p class="feedback-msg">이 추천이 어떠셨나요?</p>
+                                <div class="feedback-btns">
+                                    <button class="f-btn like" onclick="handleLike(${pId})">
+                                        <span class="material-icons">thumb_up</span>
+                                    </button>
+                                    <button class="f-btn dislike" onclick="toggleTagBox(${pId})">
+                                        <span class="material-icons">thumb_down</span>
+                                    </button>
+                                </div>
+
+                                <div class="tag-selection-box" id="tag-box-${pId}" style="display:none;">
+                                    <div class="tag-chips">
+                                        <span class="t-chip" onclick="this.classList.toggle('active')">코디와 안 어울림</span>
+                                        <span class="t-chip" onclick="this.classList.toggle('active')">향이 너무 강함</span>
+                                        <span class="t-chip" onclick="this.classList.toggle('active')">계절감 불일치</span>
+                                        <span class="t-chip" onclick="this.classList.toggle('active')">이미 아는 향수</span>
+                                    </div>
+                                    <button class="t-submit-btn" onclick="submitFeedback(${pId})">의견 보내기</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        })
+        .catch(err => console.error("향수 데이터 로드 실패:", err));
+
+    // 3. [AI 요약] 로드 (기존 동일)
+    fetch('/api/recommendation-summary/')
+        .then(res => res.json())
+        .then(data => {
+            const summaryBox = document.getElementById('ai-summary-text');
+            if (summaryBox && data.summary) {
+                summaryBox.innerHTML = data.summary.replace(/\n/g, '<br>');
+            }
+        });
+});
+
+// 피드백 관련 함수들 (동일 유지)
+function toggleTagBox(pId) {
+    const box = document.getElementById(`tag-box-${pId}`);
+    if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+function handleLike(pId) {
+    alert("피드백 감사합니다!");
+    document.getElementById(`feedback-area-${pId}`).innerHTML = "<p class='thanks-msg'>피드백이 반영되었습니다! ✨</p>";
+}
+function submitFeedback(pId) {
+    const area = document.getElementById(`feedback-area-${pId}`);
+    alert("소중한 의견 감사합니다!");
+    area.innerHTML = "<p class='thanks-msg'>피드백이 반영되었습니다! ✨</p>";
+}
+</script>
+{% endblock %}
