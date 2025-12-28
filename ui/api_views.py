@@ -52,10 +52,11 @@ class FilterImagesAPI(APIView):
         item_en = request.query_params.get('item')
         color_en = request.query_params.get('color')
 
+        # 1. 파라미터 부족 시 기본 응답
         if not (category_en and item_en and color_en):
-            return Response({'images': []})
+            return Response({'images': [None, None, None, None]})
 
-        # [누락 없는 매핑]
+        # 2. 영한 매핑 (기존 유지)
         map_category = {'top': '상의', 'bottom': '하의', 'onepiece': '원피스'}
         map_item = {
             'blouse': '블라우스', 'tshirt': '티셔츠', 'knit': '니트웨어', 'shirt': '셔츠', 'hoodie': '후드티',
@@ -73,31 +74,40 @@ class FilterImagesAPI(APIView):
         color_kr = map_color.get(color_en)
 
         if not (cat_kr and item_kr and color_kr):
-            return Response({'images': []})
+            return Response({'images': [None, None, None, None]})
 
-        # 실제 서버 내 폴더 경로 (한글 그대로 사용)
-        base_dir = os.path.join(settings.BASE_DIR, 'ui', 'static', 'ui', 'clothes', cat_kr, item_kr, color_kr)
+        # 3. S3 내의 경로(Prefix) 설정
+        # collectstatic 이후 S3 버킷 내부의 경로는 'ui/clothes/상의/...' 형식이 됩니다.
+        s3_folder_path = f"ui/clothes/{cat_kr}/{item_kr}/{color_kr}/"
+
         valid_images = []
 
-        if os.path.exists(base_dir):
-            try:
-                files = os.listdir(base_dir)
-                for file in files:
-                    if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
-                        # [중요] 브라우저용 URL은 한글 부분을 반드시 quote로 인코딩해야 함
-                        encoded_cat = quote(cat_kr)
-                        encoded_item = quote(item_kr)
-                        encoded_color = quote(color_kr)
-                        encoded_file = quote(file)
+        try:
+            # 4. [핵심 변경] S3에서 파일 목록 가져오기
+            # default_storage.listdir은 (폴더리스트, 파일리스트) 튜플을 반환합니다.
+            directories, files = default_storage.listdir(s3_folder_path)
 
-                        url_path = f'/static/ui/clothes/{encoded_cat}/{encoded_item}/{encoded_color}/{encoded_file}'
-                        valid_images.append(url_path)
-            except Exception as e:
-                print(f"Error reading directory: {e}")
+            for file in files:
+                if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
+                    # 브라우저용 URL 인코딩 (한글 처리)
+                    encoded_cat = quote(cat_kr)
+                    encoded_item = quote(item_kr)
+                    encoded_color = quote(color_kr)
+                    encoded_file = quote(file)
 
-        # 무작위 4개 선택
+                    # settings.STATIC_URL (S3 주소)를 결합하여 전체 URL 생성
+                    # 예: https://버킷명.s3.amazonaws.com/static/ui/clothes/...
+                    url_path = f"{settings.STATIC_URL}ui/clothes/{encoded_cat}/{encoded_item}/{encoded_color}/{encoded_file}"
+                    valid_images.append(url_path)
+
+        except Exception as e:
+            # S3에 해당 경로(폴더)가 아예 없는 경우 에러가 날 수 있으므로 예외 처리
+            print(f"❌ S3 Directory Access Error: {e}")
+
+        # 5. 무작위 4개 선택 (기존 유지)
         selected_images = random.sample(valid_images, min(len(valid_images), 4)) if valid_images else []
-        # 부족한 경우 null로 채움 (프론트엔드 형식 유지)
+
+        # 6. 부족한 경우 null(None)로 채움 (기존 유지)
         while len(selected_images) < 4:
             selected_images.append(None)
 
@@ -314,9 +324,9 @@ class UserOutfitAPIView(APIView):
 
         # 이미지 경로 데이터만 구성
         data = {
-            "top_img": last_user.top_img,
-            "bottom_img": last_user.bottom_img,
-            "onepiece_img": last_user.dress_img,  # 모델 필드명 확인 필요
+            "top_img": f"{settings.STATIC_URL}{last_user.top_img}" if last_user.top_img else None,
+            "bottom_img": f"{settings.STATIC_URL}{last_user.bottom_img}" if last_user.bottom_img else None,
+            "onepiece_img": f"{settings.STATIC_URL}{last_user.onepiece_img}" if last_user.onepiece_img else None,
         }
         return Response(data, status=status.HTTP_200_OK)
 
@@ -532,7 +542,7 @@ class PerfumeTop3ImageAPI(APIView):
                 "gender": p.gender if p.gender else "Unisex",
                 "accords": accords,
                 "myscore": score.myscore,
-                "image_url": f"/static/ui/perfume_images/{p.perfume_id}.jpg"  # 폴더명 확인!
+                "image_url": f"{settings.STATIC_URL}ui/perfume_images/{p.perfume_id}.jpg"
             })
 
         return Response(results, status=200)
