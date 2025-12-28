@@ -115,7 +115,7 @@ class UserOutfitAPIView(APIView):
 # =============================================================
 # 3. 추천 결과 상세 조회 API
 # =============================================================
-cclass RecommendationResultAPIView(APIView):
+class RecommendationResultAPIView(APIView):
     renderer_classes = [JSONRenderer]
 
     def get(self, request):
