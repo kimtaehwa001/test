@@ -44,19 +44,37 @@ from .recommend.ver2_LLM import get_llm_recommendation
 # =============================================================
 # 1. 이미지 데이터 조회 API
 # =============================================================
+import random
+from urllib.parse import quote
+from django.conf import settings
+from django.core.files.storage import default_storage  # S3 연동 스토리지 라이브러리
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer
+
+import random
+from urllib.parse import quote
+from django.conf import settings
+from django.core.files.storage import default_storage  # S3 연동 스토리지 라이브러리
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer
+
+
 class FilterImagesAPI(APIView):
     renderer_classes = [JSONRenderer]
 
     def get(self, request):
+        # 1. 파라미터 가져오기
         category_en = request.query_params.get('category')
         item_en = request.query_params.get('item')
         color_en = request.query_params.get('color')
 
-        # 1. 파라미터 부족 시 기본 응답
+        # 필수 파라미터가 없으면 즉시 null 패딩 응답
         if not (category_en and item_en and color_en):
             return Response({'images': [None, None, None, None]})
 
-        # 2. 영한 매핑 (기존 유지)
+        # 2. 영문 -> 한글 매핑 (기존 로직 그대로 유지)
         map_category = {'top': '상의', 'bottom': '하의', 'onepiece': '원피스'}
         map_item = {
             'blouse': '블라우스', 'tshirt': '티셔츠', 'knit': '니트웨어', 'shirt': '셔츠', 'hoodie': '후드티',
@@ -73,41 +91,44 @@ class FilterImagesAPI(APIView):
         item_kr = map_item.get(item_en)
         color_kr = map_color.get(color_en)
 
+        # 매핑된 결과가 없으면 null 패딩 응답
         if not (cat_kr and item_kr and color_kr):
             return Response({'images': [None, None, None, None]})
 
-        # 3. S3 내의 경로(Prefix) 설정
-        # collectstatic 이후 S3 버킷 내부의 경로는 'ui/clothes/상의/...' 형식이 됩니다.
+        # 3. S3 검색 경로 설정 (중요!)
+        # collectstatic은 settings.py의 location 설정(보통 'static') 아래에 저장합니다.
+        # 따라서 그 하위 경로인 'ui/clothes/...'부터 적어주면 됩니다.
         s3_folder_path = f"ui/clothes/{cat_kr}/{item_kr}/{color_kr}/"
 
         valid_images = []
 
         try:
-            # 4. [핵심 변경] S3에서 파일 목록 가져오기
-            # default_storage.listdir은 (폴더리스트, 파일리스트) 튜플을 반환합니다.
-            directories, files = default_storage.listdir(s3_folder_path)
+            # 4. S3에서 파일 목록 가져오기
+            # default_storage.listdir은 (폴더리스트, 파일리스트)를 반환합니다.
+            _, files = default_storage.listdir(s3_folder_path)
 
             for file in files:
+                # 이미지 확장자 필터링
                 if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
-                    # 브라우저용 URL 인코딩 (한글 처리)
+                    # 브라우저가 인식할 수 있도록 한글 및 파일명을 URL 인코딩
                     encoded_cat = quote(cat_kr)
                     encoded_item = quote(item_kr)
                     encoded_color = quote(color_kr)
                     encoded_file = quote(file)
 
-                    # settings.STATIC_URL (S3 주소)를 결합하여 전체 URL 생성
-                    # 예: https://버킷명.s3.amazonaws.com/static/ui/clothes/...
+                    # 최종 S3 URL 생성
+                    # 예: https://버킷명.s3.amazonaws.com/static/ui/clothes/상의/블라우스/화이트/1.png
                     url_path = f"{settings.STATIC_URL}ui/clothes/{encoded_cat}/{encoded_item}/{encoded_color}/{encoded_file}"
                     valid_images.append(url_path)
 
         except Exception as e:
-            # S3에 해당 경로(폴더)가 아예 없는 경우 에러가 날 수 있으므로 예외 처리
-            print(f"❌ S3 Directory Access Error: {e}")
+            # S3 경로에 폴더가 없거나 접근 에러가 발생할 경우 터미널에 로그 남김
+            print(f"❌ S3 Path Error ({s3_folder_path}): {e}")
 
-        # 5. 무작위 4개 선택 (기존 유지)
+        # 5. 무작위 4개 선택 (기존 로직 유지)
         selected_images = random.sample(valid_images, min(len(valid_images), 4)) if valid_images else []
 
-        # 6. 부족한 경우 null(None)로 채움 (기존 유지)
+        # 6. 부족한 경우 4개가 될 때까지 null로 채움 (기존 로직 유지)
         while len(selected_images) < 4:
             selected_images.append(None)
 
