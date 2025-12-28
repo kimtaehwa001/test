@@ -61,32 +61,30 @@ class FilterImagesAPI(APIView):
             'gold': '골드', 'silver': '실버'
         }
 
-        cat_kr = map_category.get(category_en)
-        item_kr = map_item.get(item_en)
-        color_kr = map_color.get(color_en)
+        cat_kr, item_kr, color_kr = map_category.get(category_en), map_item.get(item_en), map_color.get(color_en)
 
         if not (cat_kr and item_kr and color_kr):
             return Response({'images': [None, None, None, None]})
 
-        # S3 내 경로 (AWS_LOCATION='static' 설정 시 'ui/...' 부터 시작)
+        # S3 내부 경로: settings.py의 location('static') 이후의 경로를 적어야 함
         s3_folder_path = f"ui/clothes/{cat_kr}/{item_kr}/{color_kr}/"
         valid_images = []
 
         try:
-            # S3에서 파일 목록 가져오기
+            # [디버깅] 서버 터미널 로그에 현재 찾는 경로를 출력합니다.
+            print(f"🔍 S3 listdir 시도 중: {s3_folder_path}")
+
             _, files = default_storage.listdir(s3_folder_path)
+
+            print(f"✅ S3에서 찾은 파일 개수: {len(files)}")
+
             for file in files:
                 if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
-                    encoded_cat = quote(cat_kr)
-                    encoded_item = quote(item_kr)
-                    encoded_color = quote(color_kr)
-                    encoded_file = quote(file)
-
-                    # 최종 S3 주소 결합
-                    url_path = f"{settings.STATIC_URL}ui/clothes/{encoded_cat}/{encoded_item}/{encoded_color}/{encoded_file}"
+                    # URL 인코딩 (한글 경로 처리)
+                    url_path = f"{settings.STATIC_URL}ui/clothes/{quote(cat_kr)}/{quote(item_kr)}/{quote(color_kr)}/{quote(file)}"
                     valid_images.append(url_path)
         except Exception as e:
-            print(f"❌ S3 Error for path {s3_folder_path}: {e}")
+            print(f"❌ S3 Path Error ({s3_folder_path}): {e}")
 
         selected_images = random.sample(valid_images, min(len(valid_images), 4)) if valid_images else []
         while len(selected_images) < 4:
@@ -106,7 +104,7 @@ class UserOutfitAPIView(APIView):
         if not last_user:
             return Response({"error": "데이터가 없습니다."}, status=404)
 
-        # last_user.dress_img 로 필드명 수정 (onepiece_img -> dress_img)
+        # 필드명을 dress_img로 수정
         data = {
             "top_img": f"{settings.STATIC_URL}{last_user.top_img}" if last_user.top_img else None,
             "bottom_img": f"{settings.STATIC_URL}{last_user.bottom_img}" if last_user.bottom_img else None,
@@ -114,11 +112,10 @@ class UserOutfitAPIView(APIView):
         }
         return Response(data, status=200)
 
-
 # =============================================================
 # 3. 추천 결과 상세 조회 API
 # =============================================================
-class RecommendationResultAPIView(APIView):
+cclass RecommendationResultAPIView(APIView):
     renderer_classes = [JSONRenderer]
 
     def get(self, request):
@@ -132,7 +129,6 @@ class RecommendationResultAPIView(APIView):
             perfume_serializer = RecommendationResultSerializer(results, many=True)
             perfumes_data = perfume_serializer.data
 
-        # 여기도 S3 URL이 붙도록 수정 (last_user.dress_img 필드명 확인)
         response_data = {
             "user_outfit": {
                 "top_img": f"{settings.STATIC_URL}{last_user.top_img}" if last_user and last_user.top_img else None,
