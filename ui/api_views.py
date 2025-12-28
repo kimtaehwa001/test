@@ -98,7 +98,7 @@ class FilterImagesAPI(APIView):
         # 3. S3 검색 경로 설정 (중요!)
         # collectstatic은 settings.py의 location 설정(보통 'static') 아래에 저장합니다.
         # 따라서 그 하위 경로인 'ui/clothes/...'부터 적어주면 됩니다.
-        s3_folder_path = f"ui/clothes/{cat_kr}/{item_kr}/{color_kr}/"
+        s3_folder_path = f"static/ui/clothes/{cat_kr}/{item_kr}/{color_kr}/"
 
         valid_images = []
 
