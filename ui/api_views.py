@@ -49,6 +49,7 @@ class FilterImagesAPI(APIView):
         if not (category_en and item_en and color_en):
             return Response({'images': [None, None, None, None]})
 
+        # 영한 매핑
         map_category = {'top': '상의', 'bottom': '하의', 'onepiece': '원피스'}
         map_item = {
             'blouse': '블라우스', 'tshirt': '티셔츠', 'knit': '니트웨어', 'shirt': '셔츠', 'hoodie': '후드티',
@@ -61,30 +62,32 @@ class FilterImagesAPI(APIView):
             'gold': '골드', 'silver': '실버'
         }
 
-        cat_kr, item_kr, color_kr = map_category.get(category_en), map_item.get(item_en), map_color.get(color_en)
+        # [수정 포인트] 한글 자모 분리 방지를 위해 NFC 정규화 적용
+        cat_kr = unicodedata.normalize('NFC', map_category.get(category_en, ''))
+        item_kr = unicodedata.normalize('NFC', map_item.get(item_en, ''))
+        color_kr = unicodedata.normalize('NFC', map_color.get(color_en, ''))
 
         if not (cat_kr and item_kr and color_kr):
             return Response({'images': [None, None, None, None]})
 
-        # S3 내부 경로: settings.py의 location('static') 이후의 경로를 적어야 함
+        # S3 내부 경로
         s3_folder_path = f"ui/clothes/{cat_kr}/{item_kr}/{color_kr}/"
         valid_images = []
 
         try:
-            # [디버깅] 서버 터미널 로그에 현재 찾는 경로를 출력합니다.
-            print(f"🔍 S3 listdir 시도 중: {s3_folder_path}")
-
+            print(f"🔍 S3 listdir 시도 중 : {s3_folder_path}")
+            # settings.py의 location('static') 이후의 경로를 뒤집니다.
             _, files = default_storage.listdir(s3_folder_path)
-
-            print(f"✅ S3에서 찾은 파일 개수: {len(files)}")
+            print(f"✅ S3에서 찾은 파일 개수 : {len(files)}")
 
             for file in files:
                 if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
-                    # URL 인코딩 (한글 경로 처리)
+                    # URL에 들어갈 한글 인코딩
+                    # S3 객체 경로 자체는 정규화된 한글이어야 합니다.
                     url_path = f"{settings.STATIC_URL}ui/clothes/{quote(cat_kr)}/{quote(item_kr)}/{quote(color_kr)}/{quote(file)}"
                     valid_images.append(url_path)
         except Exception as e:
-            print(f"❌ S3 Path Error ({s3_folder_path}): {e}")
+            print(f"❌ S3 Path Error: {e}")
 
         selected_images = random.sample(valid_images, min(len(valid_images), 4)) if valid_images else []
         while len(selected_images) < 4:
