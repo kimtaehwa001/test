@@ -1,3 +1,4 @@
+import unicodedata
 import os
 import random
 from urllib.parse import quote
