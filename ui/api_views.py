@@ -289,3 +289,68 @@ class RecommendationSummaryAPIView(APIView):
             return Response({"summary": summary_text}, status=200)
         except Exception as e:
             return Response({"summary": "분석 중 오류 발생"}, status=500)
+
+class ScoreView(APIView):
+    def post(self, request):
+        user_id = request.data.get("user_id")
+        print(f"DEBUG: ScoreView 호출됨, user_id={user_id}")
+
+        if not user_id:
+            return Response(
+                {"error": "user_id는 필수입니다."},
+                status=400
+            )
+
+        try:
+            user_id = int(user_id)
+
+            # 1️⃣ 점수 계산 (Top3 Score 객체 반환)
+            score_objects = myscore_cal(user_id)
+            print("🔥 생성된 Score 객체 수:", len(score_objects))
+
+            if not score_objects:
+                return Response(
+                    {"error": "생성된 score가 없습니다."},
+                    status=400
+                )
+
+            print(
+                "🏆 저장될 Top3 myscore:",
+                [s.myscore for s in score_objects]
+            )
+
+            # 2️⃣ DB 저장
+            # with transaction.atomic():
+            #     deleted_count, _ = Score.objects.filter(
+            #         user__id=user_id
+            #     ).delete()
+            #     print("🧹 삭제된 기존 score 수:", deleted_count)
+            #
+            #     Score.objects.bulk_create(score_objects)
+            #     print("✅ bulk_create 완료 (Top3만 저장)")
+            with transaction.atomic():
+                deleted_count, _ = Score.objects.filter(user_id=user_id).delete()
+                print("🧹 삭제된 기존 score 수:", deleted_count)
+
+                for s in score_objects:
+                    s.save()
+                    print("💾 저장됨:", s.user_id, s.perfume_id, s.myscore)
+
+
+            return Response(
+                {
+                    "message": "추천 완료",
+                    "count": len(score_objects),
+                    "top3_myscore": [s.myscore for s in score_objects],
+                },
+                status=200
+            )
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+
+            return Response(
+                {"error": str(e)},
+                status=500
+            )
