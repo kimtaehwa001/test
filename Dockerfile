@@ -4,7 +4,7 @@ FROM python:3.12-slim
 # 2. 필수 패키지 설치 (MySQL, ML 라이브러리용)
 RUN apt-get update && apt-get install -y \
     build-essential \
-    libmysqlclient-dev \
+    default-libmysqlclient-dev \
     pkg-config \
     unzip \
     && rm -rf /var/lib/apt/lists/*
