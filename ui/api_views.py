@@ -73,6 +73,7 @@ class FilterImagesAPI(APIView):
 
         # S3 내부 경로
         s3_folder_path = f"ui/clothes/{cat_kr}/{item_kr}/{color_kr}/"
+        _, files = default_storage.listdir(s3_folder_path)
         valid_images = []
 
         try:
