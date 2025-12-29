@@ -114,11 +114,16 @@ class UserOutfitAPIView(APIView):
         if not last_user:
             return Response({"error": "데이터가 없습니다."}, status=404)
 
-        # 필드명을 dress_img로 수정
+        # 주소가 이미 전체 URL(http로 시작)인지 체크해서 처리합니다.
+        def get_full_url(path):
+            if not path: return None
+            if path.startswith('http'): return path
+            return f"{settings.STATIC_URL}{path}"
+
         data = {
-            "top_img": f"{settings.STATIC_URL}{last_user.top_img}" if last_user.top_img else None,
-            "bottom_img": f"{settings.STATIC_URL}{last_user.bottom_img}" if last_user.bottom_img else None,
-            "onepiece_img": f"{settings.STATIC_URL}{last_user.dress_img}" if last_user.dress_img else None,
+            "top_img": get_full_url(last_user.top_img),
+            "bottom_img": get_full_url(last_user.bottom_img),
+            "onepiece_img": get_full_url(last_user.dress_img),
         }
         return Response(data, status=200)
 
@@ -139,11 +144,17 @@ class RecommendationResultAPIView(APIView):
             perfume_serializer = RecommendationResultSerializer(results, many=True)
             perfumes_data = perfume_serializer.data
 
+        # 주소 중복 방지 로직 적용
+        def get_full_url(path):
+            if not path: return None
+            if path.startswith('http'): return path
+            return f"{settings.STATIC_URL}{path}"
+
         response_data = {
             "user_outfit": {
-                "top_img": f"{settings.STATIC_URL}{last_user.top_img}" if last_user and last_user.top_img else None,
-                "bottom_img": f"{settings.STATIC_URL}{last_user.bottom_img}" if last_user and last_user.bottom_img else None,
-                "onepiece_img": f"{settings.STATIC_URL}{last_user.dress_img}" if last_user and last_user.dress_img else None,
+                "top_img": get_full_url(last_user.top_img) if last_user else None,
+                "bottom_img": get_full_url(last_user.bottom_img) if last_user else None,
+                "onepiece_img": get_full_url(last_user.dress_img) if last_user else None,
             },
             "perfumes": perfumes_data
         }
