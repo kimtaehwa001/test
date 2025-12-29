@@ -7,6 +7,7 @@ from django.db import transaction
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.utils.safestring import mark_safe
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 # DRF 관련 임포트
 from rest_framework.views import APIView
@@ -63,7 +64,7 @@ class FilterImagesAPI(APIView):
             'gold': '골드', 'silver': '실버'
         }
 
-        # [수정 포인트] 한글 자모 분리 방지를 위해 NFC 정규화 적용
+        # 한글 자모 분리 방지를 위해 NFC 정규화 적용
         cat_kr = unicodedata.normalize('NFC', map_category.get(category_en, ''))
         item_kr = unicodedata.normalize('NFC', map_item.get(item_en, ''))
         color_kr = unicodedata.normalize('NFC', map_color.get(color_en, ''))
@@ -71,22 +72,26 @@ class FilterImagesAPI(APIView):
         if not (cat_kr and item_kr and color_kr):
             return Response({'images': [None, None, None, None]})
 
-        # S3 내부 경로
+        # S3 내부 경로 (static 폴더 내부의 경로만 적음)
         s3_folder_path = f"ui/clothes/{cat_kr}/{item_kr}/{color_kr}/"
-        _, files = default_storage.listdir(s3_folder_path)
         valid_images = []
 
         try:
-            print(f"🔍 S3 listdir 시도 중 : {s3_folder_path}")
-            # settings.py의 location('static') 이후의 경로를 뒤집니다.
-            _, files = default_storage.listdir(s3_folder_path)
+            print(f"🔍 S3 static 검색 시도 : {s3_folder_path}")
+
+            # [핵심 수정] staticfiles_storage를 사용해야 S3의 'static/' 폴더 안을 뒤집니다.
+            _, files = staticfiles_storage.listdir(s3_folder_path)
+
             print(f"✅ S3에서 찾은 파일 개수 : {len(files)}")
 
             for file in files:
                 if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
-                    # URL에 들어갈 한글 인코딩
-                    # S3 객체 경로 자체는 정규화된 한글이어야 합니다.
-                    url_path = f"{settings.STATIC_URL}ui/clothes/{quote(cat_kr)}/{quote(item_kr)}/{quote(color_kr)}/{quote(file)}"
+                    encoded_cat = quote(cat_kr)
+                    encoded_item = quote(item_kr)
+                    encoded_color = quote(color_kr)
+                    encoded_file = quote(file)
+
+                    url_path = f"{settings.STATIC_URL}ui/clothes/{encoded_cat}/{encoded_item}/{encoded_color}/{encoded_file}"
                     valid_images.append(url_path)
         except Exception as e:
             print(f"❌ S3 Path Error: {e}")
