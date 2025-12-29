@@ -1,19 +1,26 @@
+version: '3.8'
+
 services:
+  # 1. 장고 상자 (Gunicorn이 그 안에서 돌아감)
   web:
     build: .
     container_name: django_app
+    # .env 파일에 적힌 S3 키, DB 비번 등을 이 상자 안에 주입합니다.
     env_file: .env
+    # 8000번 포트를 열어두지만, 밖(인터넷)에서 직접 접속은 못하게 숨깁니다. (NGINX만 접근 가능)
     expose:
       - "8000"
     restart: always
 
+  # 2. 엔진엑스 상자 (문지기 역할)
   nginx:
     image: nginx:latest
     container_name: nginx_server
     ports:
-      - "80:80"
+      - "80:80" # 외부의 80번 포트를 엔진엑스의 80번으로 연결
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    # 장고 상자가 먼저 켜진 다음에 엔진엑스가 켜지도록 순서를 정합니다.
     depends_on:
       - web
     restart: always
