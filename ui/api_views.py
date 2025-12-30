@@ -65,9 +65,9 @@ class FilterImagesAPI(APIView):
         color_en = request.query_params.get('color')
 
         if not (category_en and item_en and color_en):
-            return Response({'images': []})
+            return Response({'images': [None, None, None, None]})
 
-        # [누락 없는 매핑]
+        # 영한 매핑
         map_category = {'top': '상의', 'bottom': '하의', 'onepiece': '원피스'}
         map_item = {
             'blouse': '블라우스', 'tshirt': '티셔츠', 'knit': '니트웨어', 'shirt': '셔츠', 'hoodie': '후드티',
@@ -80,36 +80,39 @@ class FilterImagesAPI(APIView):
             'gold': '골드', 'silver': '실버'
         }
 
-        cat_kr = map_category.get(category_en)
-        item_kr = map_item.get(item_en)
-        color_kr = map_color.get(color_en)
+        # 한글 자모 분리 방지를 위해 NFC 정규화 적용
+        cat_kr = unicodedata.normalize('NFC', map_category.get(category_en, ''))
+        item_kr = unicodedata.normalize('NFC', map_item.get(item_en, ''))
+        color_kr = unicodedata.normalize('NFC', map_color.get(color_en, ''))
 
         if not (cat_kr and item_kr and color_kr):
-            return Response({'images': []})
+            return Response({'images': [None, None, None, None]})
 
-        # 실제 서버 내 폴더 경로 (한글 그대로 사용)
-        base_dir = os.path.join(settings.BASE_DIR, 'ui', 'static', 'ui', 'clothes', cat_kr, item_kr, color_kr)
+        # S3 내부 경로 (static 폴더 내부의 경로만 적음)
+        s3_folder_path = f"ui/clothes/{cat_kr}/{item_kr}/{color_kr}/"
         valid_images = []
 
-        if os.path.exists(base_dir):
-            try:
-                files = os.listdir(base_dir)
-                for file in files:
-                    if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
-                        # [중요] 브라우저용 URL은 한글 부분을 반드시 quote로 인코딩해야 함
-                        encoded_cat = quote(cat_kr)
-                        encoded_item = quote(item_kr)
-                        encoded_color = quote(color_kr)
-                        encoded_file = quote(file)
+        try:
+            print(f"🔍 S3 static 검색 시도 : {s3_folder_path}")
 
-                        url_path = f'/static/ui/clothes/{encoded_cat}/{encoded_item}/{encoded_color}/{encoded_file}'
-                        valid_images.append(url_path)
-            except Exception as e:
-                print(f"Error reading directory: {e}")
+            # [핵심 수정] staticfiles_storage를 사용해야 S3의 'static/' 폴더 안을 뒤집니다.
+            _, files = staticfiles_storage.listdir(s3_folder_path)
 
-        # 무작위 4개 선택
+            print(f"✅ S3에서 찾은 파일 개수 : {len(files)}")
+
+            for file in files:
+                if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
+                    encoded_cat = quote(cat_kr)
+                    encoded_item = quote(item_kr)
+                    encoded_color = quote(color_kr)
+                    encoded_file = quote(file)
+
+                    url_path = f"{settings.STATIC_URL}ui/clothes/{encoded_cat}/{encoded_item}/{encoded_color}/{encoded_file}"
+                    valid_images.append(url_path)
+        except Exception as e:
+            print(f"❌ S3 Path Error: {e}")
+
         selected_images = random.sample(valid_images, min(len(valid_images), 4)) if valid_images else []
-        # 부족한 경우 null로 채움 (프론트엔드 형식 유지)
         while len(selected_images) < 4:
             selected_images.append(None)
 
@@ -318,26 +321,25 @@ class UserInputView(APIView):
 
 
 class UserOutfitAPIView(APIView):
-    """
-    사용자가 방금 선택한 코디 이미지 경로만 반환하는 전용 API
-    """
     renderer_classes = [JSONRenderer]
 
     def get(self, request):
-        # 가장 최근에 저장된 사용자 정보 가져오기
         last_user = UserInfo.objects.last()
-
         if not last_user:
-            return Response({"error": "데이터가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "데이터가 없습니다."}, status=404)
 
-        # 이미지 경로 데이터만 구성
+        # 주소가 이미 전체 URL(http로 시작)인지 체크해서 처리합니다.
+        def get_full_url(path):
+            if not path: return None
+            if path.startswith('http'): return path
+            return f"{settings.STATIC_URL}{path}"
+
         data = {
-            "top_img": last_user.top_img,
-            "bottom_img": last_user.bottom_img,
-            "onepiece_img": last_user.dress_img,  # 모델 필드명 확인 필요
+            "top_img": get_full_url(last_user.top_img),
+            "bottom_img": get_full_url(last_user.bottom_img),
+            "onepiece_img": get_full_url(last_user.dress_img),
         }
-        return Response(data, status=status.HTTP_200_OK)
-
+        return Response(data, status=200)
 
 class ScoreView(APIView):
     def post(self, request):
@@ -452,30 +454,31 @@ class RecommendationResultAPIView(APIView):
     renderer_classes = [JSONRenderer]
 
     def get(self, request):
-        # 1. 점수와 상관없이 가장 최근 사용자 정보는 무조건 가져옴
         last_user = UserInfo.objects.last()
-
-        # 2. 점수 결과 가져오기 (고장 났더라도 에러 내지 않음)
-        results = Score.objects.all().select_related(
-            'perfume', 'perfume__season', 'perfume__mainaccord1', 'perfume__mainaccord2', 'perfume__mainaccord3'
+        results = Score.objects.filter(user=last_user).select_related(
+            'perfume', 'perfume__season'
         ).order_by('-myscore')
 
-        # 3. 향수 데이터 시리얼라이징 (결과가 있으면 변환, 없으면 빈 리스트)
         perfumes_data = []
         if results.exists():
             perfume_serializer = RecommendationResultSerializer(results, many=True)
             perfumes_data = perfume_serializer.data
 
-        # 4. 최종 응답 (상태 코드 200으로 고정하여 자바스크립트가 멈추지 않게 함)
+        # 주소 중복 방지 로직 적용
+        def get_full_url(path):
+            if not path: return None
+            if path.startswith('http'): return path
+            return f"{settings.STATIC_URL}{path}"
+
         response_data = {
             "user_outfit": {
-                "top_img": last_user.top_img if last_user else None,
-                "bottom_img": last_user.bottom_img if last_user else None,
-                "onepiece_img": last_user.dress_img if last_user else None,
+                "top_img": get_full_url(last_user.top_img) if last_user else None,
+                "bottom_img": get_full_url(last_user.bottom_img) if last_user else None,
+                "onepiece_img": get_full_url(last_user.dress_img) if last_user else None,
             },
-            "perfumes": perfumes_data  # 점수 고장 시 빈 배열 [] 이 감
+            "perfumes": perfumes_data
         }
-        return Response(response_data, status=status.HTTP_200_OK)
+        return Response(response_data, status=200)
 
 
 # 향수 이미지 api
