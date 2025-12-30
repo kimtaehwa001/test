@@ -2,6 +2,7 @@ import os
 import random
 from urllib.parse import quote
 import unicodedata
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 from django.db import transaction
 from django.conf import settings
