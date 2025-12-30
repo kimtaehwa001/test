@@ -120,7 +120,6 @@ class FilterImagesAPI(APIView):
 
         return Response({'images': selected_images})
 
-
 # =============================================================
 # 2. 향수 목록 조회 API (검색 기능 추가됨)
 # =============================================================
@@ -516,15 +515,10 @@ class PerfumeTop3ImageAPI(APIView):
     renderer_classes = [JSONRenderer]
 
     def get(self, request):
-        # 1. 테스트를 위해 특정 유저(예: 5번)로 고정하거나, 마지막 유저를 선택
-        # target_user = UserInfo.objects.get(user_id=5) # 수동 데이터를 넣은 번호로 고정할 때
-        target_user = UserInfo.objects.last()  # 가장 최근 유저를 타겟팅할 때
-
+        target_user = UserInfo.objects.last()
         if not target_user:
             return Response({"error": "유저 정보가 없습니다."}, status=404)
 
-        # 2. Score 테이블에서 해당 유저의 Top 3 가져오기
-        # select_related를 사용하여 성능을 최적화합니다.
         top3_scores = Score.objects.filter(user=target_user).select_related(
             'perfume', 'perfume__mainaccord1', 'perfume__mainaccord2', 'perfume__mainaccord3'
         ).order_by('-myscore')[:3]
@@ -532,12 +526,7 @@ class PerfumeTop3ImageAPI(APIView):
         results = []
         for score in top3_scores:
             p = score.perfume
-
-            # 어코드(향조) 리스트 생성
-            accords = []
-            if p.mainaccord1: accords.append(p.mainaccord1.mainaccord)
-            if p.mainaccord2: accords.append(p.mainaccord2.mainaccord)
-            if p.mainaccord3: accords.append(p.mainaccord3.mainaccord)
+            accords = [a.mainaccord for a in [p.mainaccord1, p.mainaccord2, p.mainaccord3] if a]
 
             results.append({
                 "perfume_id": p.perfume_id,
@@ -545,10 +534,9 @@ class PerfumeTop3ImageAPI(APIView):
                 "brand": p.brand,
                 "gender": p.gender if p.gender else "Unisex",
                 "accords": accords,
-                "myscore": float(score.myscore),
-                "image_url": f"{settings.STATIC_URL}ui/perfume_images/{p.id}.jpg"  # 폴더명 확인!
+                "myscore": score.myscore,
+                "image_url": f"{settings.STATIC_URL}ui/perfume_images/{p.perfume_id}.jpg"
             })
-
         return Response(results, status=200)
 
 
