@@ -546,7 +546,7 @@ class PerfumeTop3ImageAPI(APIView):
                 "gender": p.gender if p.gender else "Unisex",
                 "accords": accords,
                 "myscore": float(score.myscore),
-                "image_url": f"/static/ui/perfume_images/{p.perfume_id}.jpg"  # 폴더명 확인!
+                "image_url": f"{settings.STATIC_URL}ui/perfume_images/{p.id}.jpg"  # 폴더명 확인!
             })
 
         return Response(results, status=200)
