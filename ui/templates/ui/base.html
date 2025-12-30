@@ -1,16 +1,24 @@
+
 <!DOCTYPE html>
 {% load static %}
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>My Perfume</title>
-    <!-- 아이콘 사용을 위한 CDN (Google Icons) -->
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+
+    <!-- 아이콘 CDN -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- ⭐ 공통 스타일 파일 (이게 핵심) -->
+    <link rel="stylesheet" href="{% static 'ui/style.css' %}">
+
+    <!-- base 전용 최소 스타일만 유지 -->
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; }
         body { display: flex; background-color: #fcfcfc; height: 100vh; }
 
-        /* 왼쪽 사이드바 스타일 */
         .sidebar {
             width: 80px;
             background-color: #fff;
@@ -18,7 +26,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 40px; /* 위쪽 여백 */
+            padding-top: 40px;
             height: 100%;
             position: fixed;
             z-index: 100;
@@ -36,42 +44,28 @@
         }
 
         .sidebar .menu-item:hover {
-            color: #333; /* 마우스 올리면 진해짐 */
+            color: #333;
         }
 
-        /* 메인 컨텐츠 영역 */
         .content {
-            margin-left: 80px; /* 사이드바 너비만큼 띄움 */
-            flex: 1;
-            padding: 40px;
-            overflow-y: auto;
-        }
-
-        /* 공통 유틸리티 */
-        .img-placeholder {
-            background-color: #e0e0e0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #888;
+          margin-left: 80px;
+          flex: 1;
+          padding: 40px;
+          overflow-y: auto;
         }
     </style>
 </head>
 <body>
 
-    <!-- 사이드바 (수정됨) -->
     <div class="sidebar">
-        <!-- 홈 버튼 하나만 배치 -->
         <a href="{% url 'home' %}" class="menu-item" style="text-decoration: none; color: inherit;">
-            <span class="material-icons icon-box" style="font-size: 32px; margin-bottom: 5px;">home</span>
+            <span class="material-icons" style="font-size: 32px; margin-bottom: 5px;">home</span>
             <span style="font-size: 12px; font-weight: bold;">Home</span>
         </a>
     </div>
 
-    <!-- 페이지별 내용이 들어갈 곳 -->
     <div class="content">
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </div>
 
 </body>

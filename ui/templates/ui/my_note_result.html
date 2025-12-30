@@ -1,0 +1,65 @@
+
+{% extends 'ui/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="result-page">
+    <div class="result-header" style="text-align: center; margin-top: 40px; margin-bottom: 60px;">
+            <h1 class="logo-text">MY PERFUME</h1>
+            <p class="page-subtitle" style="text-align: center; color: #888; margin-bottom: 10px;">My Note, 지금 내 스타일에 어울리는 향수를 기록해보세요</p>
+    </div>
+  <div class="result-sections-horizontal">
+
+    <!-- 1. 내 스타일 -->
+    <section class="result-section style-section">
+        <h3 class="section-title">1. 내 스타일</h3>
+
+        <div class="style-image-box {% if not onepiece_img %}vertical{% endif %}">
+            {% if onepiece_img %}
+                <img src="{{ onepiece_img }}" class="style-img">
+            {% else %}
+                <img src="{{ top_img }}" class="style-img half">
+                <img src="{{ bottom_img }}" class="style-img half">
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- 2. 내 향수 -->
+    <section class="result-section perfume-section">
+        <h3 class="section-title">2. 내 향수</h3>
+
+        <div class="mynote-result-box">
+
+            {% for p in mynote_list %}
+            <div class="mynote-result-row">
+                <!-- 이미지 -->
+                <img src="{{ p.image_url }}" class="perfume-thumb">
+
+                <!-- 정보 -->
+                <div class="perfume-info">
+                    <div class="perfume-name">{{ p.name }}</div>
+                    <div class="perfume-brand">{{ p.brand }}</div>
+                </div>
+
+                <!-- 점수 -->
+                <div class="perfume-score">
+                    내 스타일과 향수의 점수<br>
+                    <strong>{{ p.score }} / 100</strong>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <!-- ✅ 완료 버튼: 내 향수 아래 오른쪽 -->
+        <div style="text-align: right; margin-top: 20px;">
+            <form action="{% url 'complete' %}" method="post" style="text-align: right; margin-top: 20px;">
+                {% csrf_token %}
+                <button type="submit" class="mynote-complete-btn">
+                    완료
+                </button>
+            </form>
+        </div>
+    </section>
+  </div>
+</div>
+</div>
+{% endblock %}

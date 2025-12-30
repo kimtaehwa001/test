@@ -1,3 +1,4 @@
+
 from rest_framework import serializers
 from .models import TopBottom, Dress, ClothesColor, PerfumeColor, Perfume, PerfumeSeason, PerfumeClassification, UserInfo, Score
 
@@ -67,17 +68,21 @@ class UserInputSerializer(serializers.Serializer):
     # 1. 상의 정보
     top = serializers.CharField(required=False, allow_null=True)
     top_color = serializers.CharField(required=False, allow_null=True)
-    top_img = serializers.CharField(required=False, allow_null=True) # 추가됨
+    top_img = serializers.CharField(required=False, allow_null=True)
 
     # 2. 하의 정보
     bottom = serializers.CharField(required=False, allow_null=True)
     bottom_color = serializers.CharField(required=False, allow_null=True)
-    bottom_img = serializers.CharField(required=False, allow_null=True) # 추가됨
+    bottom_img = serializers.CharField(required=False, allow_null=True)
 
     # 3. 원피스 정보
     onepiece = serializers.CharField(required=False, allow_null=True)
     onepiece_color = serializers.CharField(required=False, allow_null=True)
-    onepiece_img = serializers.CharField(required=False, allow_null=True) # 추가됨
+    onepiece_img = serializers.CharField(required=False, allow_null=True)
+
+    # for_someone 전용
+    recipient = serializers.CharField(required=False, allow_null=True)
+    situation = serializers.CharField(required=False, allow_null=True)
 
     def validate(self, data):
         """
@@ -124,7 +129,7 @@ class RecommendationResultSerializer(serializers.ModelSerializer):
 
     def get_myscore(self, obj):
         # 소수점 첫째 자리까지 반올림 (예: 141.7)
-        return round(float(obj.myscore), 1)
+        return round(float(obj.myscore), 3)
 
     def get_top_season(self, obj):
         try:

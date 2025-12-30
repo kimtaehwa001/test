@@ -1,3 +1,4 @@
+
 from django.db import models
 
 
@@ -266,3 +267,29 @@ class UserSmellingInput(models.Model):
     class Meta:
         db_table = "user_smelling_input"
         app_label = 'ui'
+
+class Weight(models.Model):
+    weight_id = models.AutoField(primary_key=True)
+    style_weight = models.FloatField(default=1.0, verbose_name="style_weight")
+    color_weight = models.FloatField(default=1.0, verbose_name="color_weight")
+    season_weight = models.FloatField(default=1.0, verbose_name="season_weight")
+
+    class Meta:
+        db_table = 'weight'
+
+class UserSmellingMyScore(models.Model):
+    perfume_id = models.IntegerField()
+    user_id = models.IntegerField()
+
+    color_score = models.DecimalField(max_digits=10, decimal_places=6)
+    season_score = models.DecimalField(max_digits=10, decimal_places=6)
+    style_score = models.DecimalField(max_digits=10, decimal_places=6)
+    myscore = models.DecimalField(max_digits=10, decimal_places=6)
+
+    class Meta:
+        db_table = "user_smelling_myscore"
+        unique_together = ("user_id", "perfume_id")  # 동일 조합 방지
+        indexes = [
+            models.Index(fields=["user_id"]),
+            models.Index(fields=["perfume_id"]),
+        ]

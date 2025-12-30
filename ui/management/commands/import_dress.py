@@ -1,3 +1,4 @@
+
 import pandas as pd
 from django.core.management.base import BaseCommand
 from ui.models import Dress, ClothesColor

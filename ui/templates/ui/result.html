@@ -1,3 +1,4 @@
+
 {% extends 'ui/base.html' %}
 {% load static %}
 
@@ -10,9 +11,8 @@
 <div class="result-container">
     <!-- 1. 헤더 섹션 -->
     <div class="result-header" style="text-align: center; margin-top: 40px; margin-bottom: 60px;">
-        <h1 class="page-title" style="text-align: center; padding: 0;">My Perfume</h1>
-        <p class="page-subtitle" style="text-align: center; color: #888; margin-bottom: 10px;">당신의 향을 찾으세요</p>
-        <h2 class="section-header">For Me, 지금의 나에게 어울리는 향은?</h2>
+        <h1 class="logo-text">MY PERFUME</h1>
+        <p class="page-subtitle" style="text-align: center; color: #888; margin-bottom: 10px;">For Me, 지금의 나에게 어울리는 향은?</p>
     </div>
 
     <!-- 2. 상단 분석 영역 (코디 이미지 + AI 추천 이유) -->
@@ -79,6 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             data.forEach((item, index) => {
                 const accordText = item.accords.join(' · ');
+                item.myscore = 100*(item.myscore)
                 const formattedScore = parseFloat(item.myscore).toFixed(2);
                 const pId = item.perfume_id;
 
@@ -96,31 +97,31 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="score-display-row">
                                 <span class="score-label">Matching Score</span>
                                 <span class="score-value">${formattedScore}</span>
-                                <span class="score-max">/ 300</span>
+                                <span class="score-max">/ 100</span>
                             </div>
 
                             <!-- 개별 피드백 영역 -->
-                            <div class="feedback-container" id="feedback-area-${pId}">
-                                <p class="feedback-msg">이 추천이 어떠셨나요?</p>
-                                <div class="feedback-btns">
-                                    <button class="f-btn like" onclick="handleLike(${pId})">
-                                        <span class="material-icons">thumb_up</span>
-                                    </button>
-                                    <button class="f-btn dislike" onclick="toggleTagBox(${pId})">
-                                        <span class="material-icons">thumb_down</span>
-                                    </button>
-                                </div>
+<!--                            <div class="feedback-container" id="feedback-area-${pId}">-->
+<!--                                <p class="feedback-msg">이 추천이 어떠셨나요?</p>-->
+<!--                                <div class="feedback-btns">-->
+<!--                                    <button class="f-btn like" onclick="handleLike(${pId})">-->
+<!--                                        <span class="material-icons">thumb_up</span>-->
+<!--                                    </button>-->
+<!--                                    <button class="f-btn dislike" onclick="toggleTagBox(${pId})">-->
+<!--                                        <span class="material-icons">thumb_down</span>-->
+<!--                                    </button>-->
+<!--                                </div>-->
 
-                                <div class="tag-selection-box" id="tag-box-${pId}" style="display:none;">
-                                    <div class="tag-chips">
-                                        <span class="t-chip" onclick="this.classList.toggle('active')">코디와 안 어울림</span>
-                                        <span class="t-chip" onclick="this.classList.toggle('active')">향이 너무 강함</span>
-                                        <span class="t-chip" onclick="this.classList.toggle('active')">계절감 불일치</span>
-                                        <span class="t-chip" onclick="this.classList.toggle('active')">이미 아는 향수</span>
-                                    </div>
-                                    <button class="t-submit-btn" onclick="submitFeedback(${pId})">의견 보내기</button>
-                                </div>
-                            </div>
+<!--                                <div class="tag-selection-box" id="tag-box-${pId}" style="display:none;">-->
+<!--                                    <div class="tag-chips">-->
+<!--                                        <span class="t-chip" onclick="this.classList.toggle('active')">코디와 안 어울림</span>-->
+<!--                                        <span class="t-chip" onclick="this.classList.toggle('active')">향이 너무 강함</span>-->
+<!--                                        <span class="t-chip" onclick="this.classList.toggle('active')">계절감 불일치</span>-->
+<!--                                        <span class="t-chip" onclick="this.classList.toggle('active')">이미 아는 향수</span>-->
+<!--                                    </div>-->
+<!--                                    <button class="t-submit-btn" onclick="submitFeedback(${pId})">의견 보내기</button>-->
+<!--                                </div>-->
+<!--                            </div>-->
                         </div>
                     </div>
                 `;

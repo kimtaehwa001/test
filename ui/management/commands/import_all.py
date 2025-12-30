@@ -1,3 +1,4 @@
+
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 
@@ -15,6 +16,9 @@ class Command(BaseCommand):
             "import_dress",
             "import_user_info",
             "import_classification",
+            "import_user_smelling",
+            "import_user_smelling_score",
+            "import_weights",
         ]
 
         for cmd in commands:

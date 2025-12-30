@@ -1,165 +1,260 @@
+
 {% extends 'ui/base.html' %}
 {% load static %}
 
 {% block content %}
-<!-- CSS 연결 (캐시 방지용 버전 태그 ?v=8) -->
-<link rel="stylesheet" type="text/css" href="{% static 'ui/style.css' %}?v=8">
+<!-- 보안을 위한 CSRF 토큰 및 필수 외부 리소스 -->
+<input type="hidden" id="csrf_token" value="{{ csrf_token }}">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{% static 'ui/style.css' %}?v=3.0">
 
 <div class="result-container">
-
-    <!-- 헤더 -->
-    <div style="text-align: center; margin-top: 40px; margin-bottom: 60px;">
-        <h1 class="page-title">My Perfume</h1>
-        <p class="page-subtitle">당신의 향을 찾으세요</p>
-        <h2 class="section-header">For Someone, 그 사람의 분위기를 향기로 담아 선물하면 어떨까?</h2>
+    <!-- 1. 헤더 섹션 (result.txt 스타일 적용) -->
+    <div class="result-header" style="text-align: center; margin-top: 40px; margin-bottom: 60px;">
+        <h1 class="logo-text">MY PERFUME</h1>
+        <p class="page-subtitle" style="text-align: center; color: #888; margin-bottom: 10px;">For Someone, 그 사람의 분위기를 향기로 담아 선물하면 어떨까?</p>
     </div>
 
-    <!-- [1] 분석 결과 -->
-    <div class="analysis-section">
-        <div class="analysis-img-box">
-            Analysis Image
+    <!-- 2. 상단 분석 영역 (result.txt의 가로 배치 레이아웃 적용) -->
+    <div class="analysis-horizontal-box">
+        <!-- [좌측] 사용자가 선택한 코디 이미지 -->
+        <div class="clothing-img-box" id="outfit-display-area">
+            <span class="material-icons" style="font-size: 60px; color: #ddd;">checkroom</span>
+            <p style="font-size: 14px; color: #999;">코디를 불러오는 중...</p>
         </div>
-        <div class="analysis-text">
-            <h3>분석결과</h3>
-            <p>
-                - 대상은 (연령대) (성별)으로 (스타일) 스타일을 선호해요.<br>
-                - 톤다운된 코디에서 포인트 컬러 사용이 보이는 점으로 보아<br>
-                자연스럽고 과하지 않은 취향이 드러났어요.<br>
-                - 취향 분석 결과: (향기 계열) 계열을 선호할 가능성이 높아요.<br>
-                <br>
-                이에 따라 밝고 투명하며 거부감 없는 향을 중심으로 추천해드릴게요.
+
+        <!-- [우측] AI 분석 결과 -->
+        <div class="llm-explanation-box">
+            <h3>분석 결과 및 추천 이유</h3>
+            <p id="ai-summary-text" style="line-height: 1.6; color: #555;">
+                AI가 선택하신 코디와 정보를 분석하여 추천 이유를 작성하고 있습니다. 잠시만 기다려 주세요...
             </p>
         </div>
     </div>
 
-    <!-- [2] TOP 3 리스트 -->
-    <div class="top3-container">
-        <div class="top3-header">TOP3 Quick Pick <span class="material-icons">arrow_forward</span></div>
-
-        <!-- 향수 1 -->
-        <div class="perfume-item">
-            <div class="perfume-info">
-                <div class="perfume-img">Img</div>
-                <div class="perfume-text">
-                    <h4>Perfume Name 1</h4>
-                    <span class="brand">Brand Name</span>
-                    <span class="tags">4.2 • Unisex • Summer</span>
-                </div>
-            </div>
-            <div class="scent-chart">
-                <div class="chart-row"><span class="chart-label">Fresh</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span></div></div>
-                <div class="chart-row"><span class="chart-label">Floral</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
-                <div class="chart-row"><span class="chart-label">Citrus</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span></div></div>
-                <div class="chart-row"><span class="chart-label">Woody</span><div class="dots"><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
-                <div class="chart-row"><span class="chart-label">Powdery</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
-            </div>
-        </div>
-
-        <!-- 향수 2 -->
-        <div class="perfume-item">
-            <div class="perfume-info">
-                <div class="perfume-img">Img</div>
-                <div class="perfume-text">
-                    <h4>Perfume Name 2</h4>
-                    <span class="brand">Brand Name</span>
-                    <span class="tags">4.15 • Unisex • Summer</span>
-                </div>
-            </div>
-            <div class="scent-chart">
-                <div class="chart-row"><span class="chart-label">Fresh</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span></div></div>
-                <div class="chart-row"><span class="chart-label">Floral</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
-                <div class="chart-row"><span class="chart-label">Citrus</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
-                <div class="chart-row"><span class="chart-label">Woody</span><div class="dots"><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
-                <div class="chart-row"><span class="chart-label">Powdery</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
-            </div>
-        </div>
-
-        <!-- 향수 3 -->
-        <div class="perfume-item">
-            <div class="perfume-info">
-                <div class="perfume-img">Img</div>
-                <div class="perfume-text">
-                    <h4>Perfume Name 3</h4>
-                    <span class="brand">Brand Name</span>
-                    <span class="tags">4.15 • Unisex • Spring</span>
-                </div>
-            </div>
-            <div class="scent-chart">
-                <div class="chart-row"><span class="chart-label">Fresh</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span></div></div>
-                <div class="chart-row"><span class="chart-label">Floral</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
-                <div class="chart-row"><span class="chart-label">Citrus</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span></div></div>
-                <div class="chart-row"><span class="chart-label">Woody</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
-                <div class="chart-row"><span class="chart-label">Powdery</span><div class="dots"><span class="dot filled"></span><span class="dot filled"></span><span class="dot filled"></span><span class="dot empty"></span><span class="dot empty"></span></div></div>
-            </div>
+    <!-- 3. 하단 향수 그리드 (result.txt의 동적 그리드 적용) -->
+    <div class="perfume-grid-container">
+        <h3 class="grid-title">TOP3 Quick Pick <span class="material-icons" style="vertical-align: middle; font-size: 18px;">arrow_forward</span></h3>
+        <div class="perfume-cards-wrapper" id="perfume-results-container">
+            <!-- 자바스크립트가 카드들을 여기에 생성합니다 -->
         </div>
     </div>
 
-    <!-- [3] Gift Card Message (For Someone 전용 섹션) -->
-<!-- [3] Gift Card Message -->
-    <div class="gift-section">
-        <h2 class="gift-header">Gift Card Message</h2>
+    <!-- 4. Gift Card Message (For Someone 전용 섹션 유지) -->
+    <div class="gift-section" style="margin-top: 80px; padding-top: 40px; border-top: 1px solid #eee;">
+        <h2 class="gift-header" style="font-size: 20px; font-weight: 700; margin-bottom: 30px; color: #333;">Gift Card Message</h2>
 
-        <div class="gift-layout">
+        <div class="gift-layout" style="display: flex; gap: 40px; align-items: flex-start;">
             <!-- 왼쪽: 옵션 -->
-            <div class="gift-options">
-                <h4>• 편지 문구 추천</h4>
+            <div class="gift-options" style="flex: 1;">
+                <h4 style="font-size: 16px; margin-bottom: 15px;">• 편지 문구 추천</h4>
                 <div class="btn-group">
-                    <!-- ▼ onclick 이벤트 추가됨 -->
                     <button class="selection-btn active" onclick="toggleGiftMessage(this)">✓ 짧은 문구</button>
                     <button class="selection-btn" onclick="toggleGiftMessage(this)">긴 문구</button>
                 </div>
             </div>
 
             <!-- 오른쪽: 카드 미리보기 -->
-            <div class="gift-preview-area">
-                <div class="card-box">
-                    "너의 분위기를 닮은 향, 선물할게."<br>
-                    "첫 만남이 더 기억나면 좋겠어서."<br>
-                    "말보다 향이 먼저 마음을 전해줄 수 있으니까."
+            <div class="gift-preview-area" style="flex: 2; position: relative;">
+            <!-- id="card-content" 내부의 하드코딩된 텍스트를 제거하거나 초기 메시지로 변경 -->
+            <div class="card-box" id="card-content" style="background: #fdfaf6; padding: 30px; border-radius: 15px; border: 1px solid #e0d5c5; min-height: 120px; line-height: 1.8; color: #5d554a; font-style: italic;">
+                "선물 버튼을 클릭하여 맞춤 문구를 생성해보세요."
                 </div>
-                <!-- 새로고침 아이콘 -->
-                <span class="material-icons refresh-icon">cached</span>
-            </div>
-        </div>
-    </div>
 
+            <!-- 리롤 아이콘에 onclick 추가 및 회전 애니메이션을 위한 클래스 확인 -->
+                <span class="material-icons refresh-icon"
+                onclick="rerollMessage()"
+                style="position: absolute; bottom: 10px; right: 10px; color: #9c8cc1; cursor: pointer; transition: transform 0.5s;">
+          cached
+    </span>
 </div>
+
 <script>
-    function toggleGiftMessage(element) {
-        // 1. 같은 그룹 내의 다른 버튼 초기화
-        const parent = element.parentElement;
-        const siblings = parent.getElementsByClassName('selection-btn');
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. [코디 이미지] 로드 - 상하의 또는 원피스 이미지 배치
+    fetch('/api/user-outfit/')
+        .then(res => res.json())
+        .then(data => {
+            const outfitArea = document.getElementById('outfit-display-area');
+            if (!outfitArea) return;
+            outfitArea.innerHTML = '';
+            if (data.onepiece_img) {
+                outfitArea.innerHTML = `<img src="${data.onepiece_img}" class="outfit-card onepiece-card">`;
+            } else if (data.top_img && data.bottom_img) {
+                outfitArea.innerHTML = `
+                    <img src="${data.top_img}" class="outfit-card top-card">
+                    <img src="${data.bottom_img}" class="outfit-card bottom-card">
+                `;
+            } else {
+                outfitArea.innerHTML = `<span class="material-icons" style="font-size: 60px; color: #ddd;">checkroom</span>`;
+            }
+        });
 
-        for (let btn of siblings) {
-            btn.classList.remove('active');
-            btn.innerText = btn.innerText.replace('✓ ', ''); // 체크 제거
-        }
+    // 2. [향수 정보 및 이미지] 로드 - TOP3 카드 생성 및 피드백 기능 바인딩
+    fetch('/api/perfume-top3-images/')
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('perfume-results-container');
+            if (!container) return;
+            container.innerHTML = '';
 
-        // 2. 클릭한 버튼 활성화
-        element.classList.add('active');
-        element.innerText = '✓ ' + element.innerText; // 체크 추가
+            if (data.length === 0) {
+                container.innerHTML = "<p style='text-align:center; width:100%; color:#999;'>추천된 향수가 없습니다.</p>";
+                return;
+            }
 
-        // 3. 문구 내용 변경 (짧은 문구 vs 긴 문구)
-        const cardBox = document.getElementById('card-content');
+            data.forEach((item) => {
+                const accordText = item.accords.join(' · ');
+                item.myscore = 100*(item.myscore)
+                const formattedScore = parseFloat(item.myscore).toFixed(2);
+                const pId = item.perfume_id;
 
-        if (element.innerText.includes('짧은')) {
-            // 짧은 문구 예시
-            cardBox.innerHTML = `
-                "너의 분위기를 닮은 향, 선물할게."<br>
-                "첫 만남이 더 기억나면 좋겠어서."<br>
-                "말보다 향이 먼저 마음을 전해줄 수 있으니까."
-            `;
-        } else {
-            // 긴 문구 예시
-            cardBox.innerHTML = `
-                "평소 너의 이미지와 잘 어울릴 것 같아서 골랐어.<br>
-                이 향기가 너의 하루를 더 특별하게 만들어주길 바라.<br>
-                오늘도 좋은 하루 보내!"<br><br>
-                "지나가다 우연히 맡은 향이 너랑 너무 찰떡이라<br>
-                그냥 지나칠 수가 없더라.<br>
-                부담 갖지 말고 편하게 써줘!"
-            `;
-        }
+                const cardHtml = `
+                    <div class="perfume-card">
+                        <div class="perfume-img-slot">
+                            <img src="${item.image_url}" style="width:100%; height:100%; object-fit:contain;" onerror="this.src='/static/ui/images/default_perfume.png'">
+                        </div>
+                        <div class="perfume-details">
+                            <h4 class="p-name">${item.perfume_name}</h4>
+                            <p class="p-brand">${item.brand}</p>
+                            <p class="p-info-tags">${item.gender}</p>
+                            <p class="p-accords-list">${accordText}</p>
+                            <div class="score-display-row">
+                                <span class="score-label">Matching Score</span>
+                                <span class="score-value">${formattedScore}</span>
+                                <span class="score-max">/ 100</span>
+                            </div>
+<!--                            <div class="feedback-container" id="feedback-area-${pId}">-->
+<!--                                <p class="feedback-msg">추천이 만족스러우신가요?</p>-->
+<!--                                <div class="feedback-btns">-->
+<!--                                    <button class="f-btn like" onclick="handleLike(${pId})"><span class="material-icons">thumb_up</span></button>-->
+<!--                                    <button class="f-btn dislike" onclick="toggleTagBox(${pId})"><span class="material-icons">thumb_down</span></button>-->
+<!--                                </div>-->
+<!--                                <div class="tag-selection-box" id="tag-box-${pId}" style="display:none;">-->
+<!--                                    <div class="tag-chips">-->
+<!--                                        <span class="t-chip" onclick="this.classList.toggle('active')">코디와 안 어울림</span>-->
+<!--                                        <span class="t-chip" onclick="this.classList.toggle('active')">계절감 불일치</span>-->
+<!--                                    </div>-->
+<!--                                    <button class="t-submit-btn" onclick="submitFeedback(${pId})">의견 보내기</button>-->
+<!--                                </div>-->
+<!--                            </div>-->
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        });
+
+    // 3. [AI 요약] 로드 - For Someone 전용 요약 텍스트
+    fetch('/api/someone-summary/')
+        .then(res => res.json())
+        .then(data => {
+            const summaryBox = document.getElementById('ai-summary-text');
+            if (summaryBox && data.summary) {
+                summaryBox.innerHTML = data.summary.replace(/\n/g, '<br>');
+            }
+        });
+
+    // 4. [초기 실행] 기프트 카드 첫 문구 로드 (기본 '짧은 문구' 활성화 상태일 때)
+    const initialBtn = document.querySelector('.gift-options .selection-btn.active');
+    if (initialBtn) {
+        // 페이지 로드 시 처음 한 번은 자동으로 문구 생성
+        const type = initialBtn.innerText.includes('짧은') ? '짧은' : '긴';
+        loadGiftMessageAPI(type);
     }
+});
+
+/**
+ * Gift Card 전용 로직: 버튼 클릭 시 호출
+ */
+function toggleGiftMessage(element) {
+    // 1. 버튼 활성화 시각적 처리
+    const parent = element.parentElement;
+    const siblings = parent.getElementsByClassName('selection-btn');
+    for (let btn of siblings) {
+        btn.classList.remove('active');
+        btn.innerText = btn.innerText.replace('✓ ', '');
+    }
+    element.classList.add('active');
+    element.innerText = '✓ ' + element.innerText;
+
+    // 2. 메시지 타입 판별 후 API 호출
+    const messageType = element.innerText.includes('짧은') ? '짧은' : '긴';
+    loadGiftMessageAPI(messageType);
+}
+
+/**
+ * Gift Card API 호출 공통 함수 (리롤/버튼클릭 공용)
+ */
+function loadGiftMessageAPI(messageType) {
+    const cardBox = document.getElementById('card-content');
+    if (!cardBox) return;
+
+    // 로딩 표시 및 투명도 조절
+    cardBox.style.opacity = "0.6";
+    cardBox.innerHTML = "마음을 담은 문구를 작성 중입니다...";
+
+    fetch(`/api/gift-message/?type=${encodeURIComponent(messageType)}`)
+        .then(res => res.json())
+        .then(data => {
+            cardBox.style.opacity = "1";
+            if (data.messages && data.messages.length > 0) {
+                // 가져온 배열을 따옴표와 함께 <br>로 합쳐서 출력
+                cardBox.innerHTML = data.messages.map(m => `"${m}"`).join('<br><br>');
+            } else {
+                cardBox.innerHTML = "생성된 문구가 없습니다. 다시 시도해 주세요.";
+            }
+        })
+        .catch(() => {
+            cardBox.style.opacity = "1";
+            cardBox.innerHTML = "문구 생성에 실패했습니다. 다시 시도해 주세요.";
+        });
+}
+
+/**
+ * 리롤 아이콘(cached) 클릭 시 동작
+ */
+function rerollGiftMessage() {
+    const refreshIcon = document.querySelector('.gift-preview-area .refresh-icon');
+
+    // 1. 아이콘 회전 애니메이션
+    if (refreshIcon) {
+        refreshIcon.style.transform = 'rotate(360deg)';
+        setTimeout(() => { refreshIcon.style.transform = 'rotate(0deg)'; }, 500);
+    }
+
+    // 2. 현재 활성화된 버튼(짧은/긴) 확인 후 다시 호출
+    const activeBtn = document.querySelector('.gift-options .selection-btn.active');
+    if (activeBtn) {
+        const type = activeBtn.innerText.includes('짧은') ? '짧은' : '긴';
+        loadGiftMessageAPI(type);
+    }
+}
+
+// 아이콘 클릭 이벤트 리스너 (HTML에 onclick="rerollGiftMessage()"이 없을 경우를 대비)
+const refreshBtn = document.querySelector('.gift-preview-area .refresh-icon');
+if (refreshBtn) {
+    refreshBtn.onclick = rerollGiftMessage;
+}
+
+/**
+ * 피드백 관련 함수 (기능 유지)
+ */
+function toggleTagBox(pId) {
+    const box = document.getElementById(`tag-box-${pId}`);
+    if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+function handleLike(pId) {
+    alert("피드백 감사합니다!");
+    const area = document.getElementById(`feedback-area-${pId}`);
+    if (area) area.innerHTML = "<p class='thanks-msg'>피드백이 반영되었습니다! ✨</p>";
+}
+
+function submitFeedback(pId) {
+    alert("소중한 의견 감사합니다!");
+    const area = document.getElementById(`feedback-area-${pId}`);
+    if (area) area.innerHTML = "<p class='thanks-msg'>피드백이 반영되었습니다! ✨</p>";
+}
 </script>
 {% endblock %}
