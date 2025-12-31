@@ -83,6 +83,11 @@ TIME_ZONE = "Asia/Seoul"  # 한국 시간 설정
 USE_I18N = True
 USE_TZ = True
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://dkc1sj69bdg68.cloudfront.net",
+]
+
+
 # 4. 정적 파일 및 S3 설정 (Django 4.2+ 방식)
 USE_S3 = os.getenv('USE_S3') == 'TRUE'
 
@@ -91,6 +96,8 @@ if USE_S3:
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
     AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
     AWS_S3_REGION_NAME = 'ap-northeast-2'
+
+    AWS_S3_CUSTOM_DOMAIN= "dkc1sj69bdg68.cloudfront.net"
 
     AWS_QUERYSTRING_AUTH = False  # URL에서 복잡한 암호 제거
     AWS_S3_FILE_OVERWRITE = False
@@ -114,7 +121,7 @@ if USE_S3:
         },
     }
 
-    STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/static/'
+    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
     MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/media/'
 
 else:
@@ -129,3 +136,7 @@ STATICFILES_DIRS = [
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
