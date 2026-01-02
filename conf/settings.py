@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 # 1. 환경 변수 로드 (.env 파일 위치 지정)
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, ".env"))
+USE_S3 = os.getenv('USE_S3') == 'TRUE'
 
 # 2. 보안 설정 (환경 변수 사용)
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-default-key")
@@ -58,14 +59,13 @@ WSGI_APPLICATION = "conf.wsgi.application"
 
 # 3. Database 설정 (도커 환경 대응)
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "perfume",
-        "USER": "root",
-        "PASSWORD": "1234",
-        # 도커 외부(서버 본체)의 MySQL에 접속하기 위해 172.17.0.1 사용
-        "HOST": os.getenv("DB_HOST", "172.17.0.1"),
-        "PORT": "3306",
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME', 'perfume'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'), # 여기서 .env의 RDS 주소를 읽음
+        'PORT': '3306',
     }
 }
 
@@ -84,12 +84,10 @@ USE_I18N = True
 USE_TZ = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://dkc1sj69bdg68.cloudfront.net",
+    "https://dwu6q0vunangk.cloudfront.net",
 ]
 
 
-# 4. 정적 파일 및 S3 설정 (Django 4.2+ 방식)
-USE_S3 = os.getenv('USE_S3') == 'TRUE'
 
 if USE_S3:
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
@@ -97,7 +95,7 @@ if USE_S3:
     AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
     AWS_S3_REGION_NAME = 'ap-northeast-2'
 
-    AWS_S3_CUSTOM_DOMAIN= "dkc1sj69bdg68.cloudfront.net"
+    AWS_S3_CUSTOM_DOMAIN= "dwu6q0vunangk.cloudfront.net"
 
     AWS_QUERYSTRING_AUTH = False  # URL에서 복잡한 암호 제거
     AWS_S3_FILE_OVERWRITE = False
