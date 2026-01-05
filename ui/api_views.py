@@ -58,6 +58,71 @@ from .recommend.gift_message_LLM import get_someone_gift_message
 # =============================================================
 # 1. 이미지 데이터 조회 API
 # =============================================================
+# class FilterImagesAPI(APIView):
+#     renderer_classes = [JSONRenderer]
+#
+#     def get(self, request):
+#         category_en = request.query_params.get('category')
+#         item_en = request.query_params.get('item')
+#         color_en = request.query_params.get('color')
+#
+#         if not (category_en and item_en and color_en):
+#             return Response({'images': [None, None, None, None]})
+#
+#         # 영한 매핑
+#         map_category = {'top': '상의', 'bottom': '하의', 'onepiece': '원피스'}
+#         map_item = {
+#             'blouse': '블라우스', 'tshirt': '티셔츠', 'knit': '니트웨어', 'shirt': '셔츠', 'hoodie': '후드티',
+#             'pants': '팬츠', 'jeans': '청바지', 'skirt': '스커트', 'leggings': '레깅스',
+#             'dress': '드레스', 'jumpsuit': '점프수트'
+#         }
+#         map_color = {
+#             'white': '화이트', 'black': '블랙', 'grey': '그레이', 'navy': '네이비', 'beige': '베이지',
+#             'pink': '핑크', 'skyblue': '스카이블루', 'brown': '브라운', 'red': '레드', 'green': '그린',
+#             'gold': '골드', 'silver': '실버'
+#         }
+#
+#         # 한글 자모 분리 방지를 위해 NFC 정규화 적용
+#         cat_kr = unicodedata.normalize('NFC', map_category.get(category_en, ''))
+#         item_kr = unicodedata.normalize('NFC', map_item.get(item_en, ''))
+#         color_kr = unicodedata.normalize('NFC', map_color.get(color_en, ''))
+#
+#         if not (cat_kr and item_kr and color_kr):
+#             return Response({'images': [None, None, None, None]})
+#
+#         # S3 내부 경로 (static 폴더 내부의 경로만 적음)
+#         s3_folder_path = f"ui/clothes/{cat_kr}/{item_kr}/{color_kr}/"
+#         valid_images = []
+#
+#         try:
+#             print(f"🔍 S3 static 검색 시도 : {s3_folder_path}")
+#
+#             # [핵심 수정] staticfiles_storage를 사용해야 S3의 'static/' 폴더 안을 뒤집니다.
+#             _, files = staticfiles_storage.listdir(s3_folder_path)
+#
+#             print(f"✅ S3에서 찾은 파일 개수 : {len(files)}")
+#
+#             for file in files:
+#                 if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
+#                     encoded_cat = quote(cat_kr)
+#                     encoded_item = quote(item_kr)
+#                     encoded_color = quote(color_kr)
+#                     encoded_file = quote(file)
+#
+#                     url_path = f"{settings.STATIC_URL}ui/clothes/{encoded_cat}/{encoded_item}/{encoded_color}/{encoded_file}"
+#                     valid_images.append(url_path)
+#         except Exception as e:
+#             print(f"❌ S3 Path Error: {e}")
+#
+#         selected_images = random.sample(valid_images, min(len(valid_images), 4)) if valid_images else []
+#         while len(selected_images) < 4:
+#             selected_images.append(None)
+#
+#         return Response({'images': selected_images})
+
+_S3_FOLDER_CACHE = {}
+
+
 class FilterImagesAPI(APIView):
     renderer_classes = [JSONRenderer]
 
@@ -69,7 +134,7 @@ class FilterImagesAPI(APIView):
         if not (category_en and item_en and color_en):
             return Response({'images': [None, None, None, None]})
 
-        # 영한 매핑
+        # 영한 매핑 (기존과 동일)
         map_category = {'top': '상의', 'bottom': '하의', 'onepiece': '원피스'}
         map_item = {
             'blouse': '블라우스', 'tshirt': '티셔츠', 'knit': '니트웨어', 'shirt': '셔츠', 'hoodie': '후드티',
@@ -82,7 +147,7 @@ class FilterImagesAPI(APIView):
             'gold': '골드', 'silver': '실버'
         }
 
-        # 한글 자모 분리 방지를 위해 NFC 정규화 적용
+        # 한글 정규화 (기존과 동일)
         cat_kr = unicodedata.normalize('NFC', map_category.get(category_en, ''))
         item_kr = unicodedata.normalize('NFC', map_item.get(item_en, ''))
         color_kr = unicodedata.normalize('NFC', map_color.get(color_en, ''))
@@ -90,30 +155,37 @@ class FilterImagesAPI(APIView):
         if not (cat_kr and item_kr and color_kr):
             return Response({'images': [None, None, None, None]})
 
-        # S3 내부 경로 (static 폴더 내부의 경로만 적음)
         s3_folder_path = f"ui/clothes/{cat_kr}/{item_kr}/{color_kr}/"
+
+        # --- [최적화 시작] ---
+        # 이미 메모리에 저장된 목록이 있는지 확인
+        if s3_folder_path in _S3_FOLDER_CACHE:
+            files = _S3_FOLDER_CACHE[s3_folder_path]
+            print(f"📦 [Cache] S3 통신 없이 메모리에서 불러옴: {s3_folder_path}")
+        else:
+            try:
+                print(f"🌐 [Network] S3 목록 조회 시도 (최초 1회): {s3_folder_path}")
+                _, files = staticfiles_storage.listdir(s3_folder_path)
+                # 찾은 파일 목록을 메모리에 저장
+                _S3_FOLDER_CACHE[s3_folder_path] = files
+                print(f"✅ S3에서 찾은 파일 개수 : {len(files)}")
+            except Exception as e:
+                print(f"❌ S3 Path Error: {e}")
+                files = []
+        # --- [최적화 끝] ---
+
         valid_images = []
+        for file in files:
+            if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
+                encoded_cat = quote(cat_kr)
+                encoded_item = quote(item_kr)
+                encoded_color = quote(color_kr)
+                encoded_file = quote(file)
 
-        try:
-            print(f"🔍 S3 static 검색 시도 : {s3_folder_path}")
+                url_path = f"{settings.STATIC_URL}ui/clothes/{encoded_cat}/{encoded_item}/{encoded_color}/{encoded_file}"
+                valid_images.append(url_path)
 
-            # [핵심 수정] staticfiles_storage를 사용해야 S3의 'static/' 폴더 안을 뒤집니다.
-            _, files = staticfiles_storage.listdir(s3_folder_path)
-
-            print(f"✅ S3에서 찾은 파일 개수 : {len(files)}")
-
-            for file in files:
-                if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
-                    encoded_cat = quote(cat_kr)
-                    encoded_item = quote(item_kr)
-                    encoded_color = quote(color_kr)
-                    encoded_file = quote(file)
-
-                    url_path = f"{settings.STATIC_URL}ui/clothes/{encoded_cat}/{encoded_item}/{encoded_color}/{encoded_file}"
-                    valid_images.append(url_path)
-        except Exception as e:
-            print(f"❌ S3 Path Error: {e}")
-
+        # 4개 랜덤 선택 (기존과 동일)
         selected_images = random.sample(valid_images, min(len(valid_images), 4)) if valid_images else []
         while len(selected_images) < 4:
             selected_images.append(None)
