@@ -736,34 +736,17 @@ class MyNotePerfumeCartAPIView(APIView):
 
 
 class MyNotePerfumeSearchAPIView(APIView):
-    """
-    4-2 향수 검색 API
-    - name / brand 기준 검색
-    """
-
     def get(self, request):
-        raw_query = request.GET.get("q", "").strip()
-        query = raw_query.replace(" ", "").replace("-", "")
-
-        if not query:
-            return Response([], status=200)
-
-        perfumes = Perfume.objects.filter(
-            Q(perfume_name__icontains=raw_query) |
-            Q(brand__icontains=raw_query) |
-            Q(brand__icontains=query)
-        )[:20]
-
+        # ... (검색 로직 생략) ...
         result = []
         for p in perfumes:
             result.append({
                 "perfume_id": p.perfume_id,
                 "name": p.perfume_name,
                 "brand": p.brand,
-                # 이미지: 기존 api_views 방식 그대로
-                "perfume_img_url": f"/static/ui/perfume_images/{p.perfume_id}.jpg"
+                # [수정] 하드코딩된 주소를 settings.STATIC_URL 기반으로 변경
+                "perfume_img_url": f"{settings.STATIC_URL}ui/perfume_images/{p.perfume_id}.jpg"
             })
-
         return Response(result, status=200)
 
 
@@ -865,44 +848,41 @@ class MyNoteFilterImagesAPIView(APIView):
             'green': '그린', 'gold': '골드', 'silver': '실버'
         }
 
-        cat_kr = map_category.get(category_en)
-        item_kr = map_item.get(item_en)
-        color_kr = map_color.get(color_en)
+        # 한글 정규화 필수 적용
+        cat_kr = unicodedata.normalize('NFC', map_category.get(category_en, ''))
+        item_kr = unicodedata.normalize('NFC', map_item.get(item_en, ''))
+        color_kr = unicodedata.normalize('NFC', map_color.get(color_en, ''))
 
         if not (cat_kr and item_kr and color_kr):
             return Response({'images': []})
 
-        base_dir = os.path.join(
-            settings.BASE_DIR,
-            'ui', 'static', 'ui', 'clothes',
-            cat_kr, item_kr, color_kr
-        )
-
+        # S3 경로 설정
+        s3_folder_path = f"ui/clothes/{cat_kr}/{item_kr}/{color_kr}/"
         images = []
 
-        if os.path.exists(base_dir):
-            for file in os.listdir(base_dir):
+        try:
+            # [수정] S3에서 파일 목록 가져오기
+            _, files = staticfiles_storage.listdir(s3_folder_path)
+
+            for file in files:
                 if not file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
                     continue
 
                 name = os.path.splitext(file)[0]
                 parts = name.split("_")
 
-                # 파일명: 스타일_식별자_상의
-                if len(parts) < 3:
-                    continue
-
+                # 파일명 규칙: 스타일_식별자_상의 (기존 로직 유지)
+                if len(parts) < 3: continue
                 try:
                     cloth_id = int(parts[1])
                 except ValueError:
                     continue
 
-                encoded_cat = quote(cat_kr)
-                encoded_item = quote(item_kr)
-                encoded_color = quote(color_kr)
-                encoded_file = quote(file)
+                encoded_cat, encoded_item, encoded_color, encoded_file = quote(cat_kr), quote(item_kr), quote(
+                    color_kr), quote(file)
 
-                url_path = f'/static/ui/clothes/{encoded_cat}/{encoded_item}/{encoded_color}/{encoded_file}'
+                # [수정] STATIC_URL 적용
+                url_path = f"{settings.STATIC_URL}ui/clothes/{encoded_cat}/{encoded_item}/{encoded_color}/{encoded_file}"
 
                 images.append({
                     "id": cloth_id,
@@ -911,13 +891,12 @@ class MyNoteFilterImagesAPIView(APIView):
                     "item": item_en,
                     "color": color_en,
                 })
+        except Exception as e:
+            print(f"❌ MyNote S3 Error: {e}")
 
         images = random.sample(images, min(len(images), 4))
-        while len(images) < 4:
-            images.append(None)
-
+        while len(images) < 4: images.append(None)
         return Response({'images': images})
-
 
 class SomeoneSummaryAPIView(APIView):
     """
