@@ -736,17 +736,34 @@ class MyNotePerfumeCartAPIView(APIView):
 
 
 class MyNotePerfumeSearchAPIView(APIView):
+    """
+    4-2 향수 검색 API
+    - name / brand 기준 검색
+    """
+
     def get(self, request):
-        # ... (검색 로직 생략) ...
+        raw_query = request.GET.get("q", "").strip()
+        query = raw_query.replace(" ", "").replace("-", "")
+
+        if not query:
+            return Response([], status=200)
+
+        perfumes = Perfume.objects.filter(
+            Q(perfume_name__icontains=raw_query) |
+            Q(brand__icontains=raw_query) |
+            Q(brand__icontains=query)
+        )[:20]
+
         result = []
         for p in perfumes:
             result.append({
                 "perfume_id": p.perfume_id,
                 "name": p.perfume_name,
                 "brand": p.brand,
-                # [수정] 하드코딩된 주소를 settings.STATIC_URL 기반으로 변경
+                # 이미지: 기존 api_views 방식 그대로
                 "perfume_img_url": f"{settings.STATIC_URL}ui/perfume_images/{p.perfume_id}.jpg"
             })
+
         return Response(result, status=200)
 
 
