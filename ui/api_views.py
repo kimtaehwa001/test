@@ -773,20 +773,27 @@ from rest_framework import status
 from .models import UserSmellingInput
 
 
+# ui/api_views.py 의 MyNotePerfumeCompleteAPIView 부분을 아래로 교체
+
 class MyNotePerfumeCompleteAPIView(APIView):
     def _get_next_smelling_user_id(self):
-        last = UserSmellingInput.objects.order_by("-smelling_user_id").first()
+        # 최신 ID를 가져오는 쿼리 최적화
+        last = UserSmellingInput.objects.only('smelling_user_id').order_by("-smelling_user_id").first()
         return last.smelling_user_id + 1 if last and last.smelling_user_id else 1
 
     def post(self, request):
         perfumes = request.session.get("my_note_cart", [])
         style = request.session.get("my_note_style")
 
-        if not perfumes or not style:
-            return Response({"error": "정보가 부족합니다."}, status=400)
+        if not perfumes:
+            return Response({"error": "최소 한 개의 향수를 저장해주세요."}, status=400)
+        if not style:
+            return Response({"error": "스타일 정보가 없습니다."}, status=400)
 
         smelling_user_id = self._get_next_smelling_user_id()
-        objs_to_create = []  # [수정] 객체들을 담을 리스트
+
+        # 저장할 객체들을 담을 리스트 (메모리에 먼저 쌓음)
+        objs_to_create = []
 
         for p in perfumes:
             obj = UserSmellingInput(
@@ -797,34 +804,43 @@ class MyNotePerfumeCompleteAPIView(APIView):
                 perfume_img_url=p.get("perfume_img_url"),
                 smelling_rate=p.get("smelling_rate"),
             )
-            # 스타일 정보 입력 로직 (기존 유지)
+
+            # 스타일 정보 입력 (dress vs top/bottom)
             if style["style_type"] == "dress":
                 dress = style.get("dress")
                 if dress:
-                    obj.dress_id_id = dress.get("id");
-                    obj.dress_color = dress.get("color");
+                    obj.dress_id_id = dress.get("id")
+                    obj.dress_color = dress.get("color")
                     obj.dress_img = dress.get("img")
             else:
-                top, bottom = style.get("top"), style.get("bottom")
+                top = style.get("top")
+                bottom = style.get("bottom")
                 if top:
-                    obj.top_id_id = top.get("id");
-                    obj.top_color = top.get("color");
-                    obj.top_category = top.get("category");
+                    obj.top_id_id = top.get("id")
+                    obj.top_color = top.get("color")
+                    obj.top_category = top.get("category")
                     obj.top_img = top.get("img")
                 if bottom:
-                    obj.bottom_id_id = bottom.get("id");
-                    obj.bottom_color = bottom.get("color");
-                    obj.bottom_category = bottom.get("category");
+                    obj.bottom_id_id = bottom.get("id")
+                    obj.bottom_color = bottom.get("color")
+                    obj.bottom_category = bottom.get("category")
                     obj.bottom_img = bottom.get("img")
 
             objs_to_create.append(obj)
 
-        # [핵심 수정] 하나씩 save()하지 않고 bulk_create로 한 번에 저장 (속도 대폭 향상)
-        UserSmellingInput.objects.bulk_create(objs_to_create)
+        # [핵심 최적화] 하나씩 save() 하지 않고 한꺼번에 DB에 집어넣음
+        try:
+            with transaction.atomic():  # 안전하게 트랜잭션으로 묶음
+                UserSmellingInput.objects.bulk_create(objs_to_create)
 
-        request.session.pop("my_note_cart", None)
-        request.session.pop("my_note_style", None)
-        return Response({"message": "MyNote 저장 완료"}, status=200)
+            # 세션 정리
+            request.session.pop("my_note_cart", None)
+            request.session.pop("my_note_style", None)
+            request.session.modified = True
+
+            return Response({"message": "MyNote 저장 완료"}, status=200)
+        except Exception as e:
+            return Response({"error": f"저장 중 오류: {str(e)}"}, status=500)
 
 
 class MyNoteFilterImagesAPIView(APIView):
