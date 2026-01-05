@@ -779,23 +779,14 @@ class MyNotePerfumeCompleteAPIView(APIView):
         return last.smelling_user_id + 1 if last and last.smelling_user_id else 1
 
     def post(self, request):
-        print("🔥 my_note_style =", request.session.get("my_note_style"))
         perfumes = request.session.get("my_note_cart", [])
         style = request.session.get("my_note_style")
 
-        if not perfumes:
-            return Response(
-                {"error": "최소 한 개의 향수를 저장해주세요."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if not style:
-            return Response(
-                {"error": "스타일 정보가 없습니다."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        if not perfumes or not style:
+            return Response({"error": "정보가 부족합니다."}, status=400)
 
         smelling_user_id = self._get_next_smelling_user_id()
+        objs_to_create = []  # [수정] 객체들을 담을 리스트
 
         for p in perfumes:
             obj = UserSmellingInput(
@@ -806,39 +797,33 @@ class MyNotePerfumeCompleteAPIView(APIView):
                 perfume_img_url=p.get("perfume_img_url"),
                 smelling_rate=p.get("smelling_rate"),
             )
-
-            # 원피스
+            # 스타일 정보 입력 로직 (기존 유지)
             if style["style_type"] == "dress":
                 dress = style.get("dress")
                 if dress:
-                    obj.dress_id_id = dress.get("id")
-                    obj.dress_color = dress.get("color")
+                    obj.dress_id_id = dress.get("id");
+                    obj.dress_color = dress.get("color");
                     obj.dress_img = dress.get("img")
-
-            # 상의 + 하의
             else:
-                top = style.get("top")
-                bottom = style.get("bottom")
-
+                top, bottom = style.get("top"), style.get("bottom")
                 if top:
-                    obj.top_id_id = top.get("id")
-                    obj.top_color = top.get("color")
-                    obj.top_category = top.get("category")
+                    obj.top_id_id = top.get("id");
+                    obj.top_color = top.get("color");
+                    obj.top_category = top.get("category");
                     obj.top_img = top.get("img")
-
                 if bottom:
-                    obj.bottom_id_id = bottom.get("id")
-                    obj.bottom_color = bottom.get("color")
-                    obj.bottom_category = bottom.get("category")
+                    obj.bottom_id_id = bottom.get("id");
+                    obj.bottom_color = bottom.get("color");
+                    obj.bottom_category = bottom.get("category");
                     obj.bottom_img = bottom.get("img")
 
-            # 반드시 for문 안
-            obj.save()
+            objs_to_create.append(obj)
 
-        # 세션 정리
+        # [핵심 수정] 하나씩 save()하지 않고 bulk_create로 한 번에 저장 (속도 대폭 향상)
+        UserSmellingInput.objects.bulk_create(objs_to_create)
+
         request.session.pop("my_note_cart", None)
         request.session.pop("my_note_style", None)
-
         return Response({"message": "MyNote 저장 완료"}, status=200)
 
 
