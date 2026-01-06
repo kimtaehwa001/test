@@ -142,9 +142,12 @@ class FilterImagesAPI(APIView):
             'dress': '드레스', 'jumpsuit': '점프수트'
         }
         map_color = {
-            'white': '화이트', 'black': '블랙', 'grey': '그레이', 'navy': '네이비', 'beige': '베이지',
-            'pink': '핑크', 'skyblue': '스카이블루', 'brown': '브라운', 'red': '레드', 'green': '그린',
-            'gold': '골드', 'silver': '실버'
+            'white': '화이트', 'black': '블랙', 'beige': '베이지', 'pink': '핑크',
+            'skyblue': '스카이블루', 'grey': '그레이', 'brown': '브라운', 'navy': '네이비',
+            'red': '레드', 'yellow': '옐로우', 'blue': '블루', 'lavender': '라벤더',
+            'wine': '와인', 'silver': '실버', 'orange': '오렌지', 'khaki': '카키',
+            'green': '그린', 'purple': '퍼플', 'mint': '민트', 'gold': '골드',
+            'neon': '네온',
         }
 
         # 한글 정규화 (기존과 동일)
