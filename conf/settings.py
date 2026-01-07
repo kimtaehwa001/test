@@ -84,7 +84,7 @@ USE_I18N = True
 USE_TZ = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://d1n6k4n1dw05a9.cloudfront.net",
+    "https://d3290djm6jw5lt.cloudfront.net",
 ]
 
 
@@ -95,7 +95,7 @@ if USE_S3:
     AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
     AWS_S3_REGION_NAME = 'ap-northeast-2'
 
-    AWS_S3_CUSTOM_DOMAIN= "d1n6k4n1dw05a9.cloudfront.net"
+    AWS_S3_CUSTOM_DOMAIN= "d3290djm6jw5lt.cloudfront.net"
 
     AWS_QUERYSTRING_AUTH = False  # URL에서 복잡한 암호 제거
     AWS_S3_FILE_OVERWRITE = False
